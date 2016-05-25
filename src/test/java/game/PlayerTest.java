@@ -8,6 +8,7 @@ import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import game.Player.ITask;
 import game.Player.Task;
 import game.Player.TimedTask;
+import game.Player.Timer;
 
 @RunWith(HierarchicalContextRunner.class)
 public class PlayerTest implements WithAssertions {
@@ -78,6 +79,16 @@ public class PlayerTest implements WithAssertions {
             System.out.println(end - start);
 
             assertThat(exec).isEqualTo("43");
+        }
+    }
+
+    @Test
+    public void tmp_3() throws InterruptedException {
+        Timer start = Timer.start(500);
+        for (int i = 0; i < 10; i++) {
+            Thread.sleep(50L);
+            start.lap();
+            start.print();
         }
     }
 }

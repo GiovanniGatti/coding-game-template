@@ -61,4 +61,51 @@ final class Player {
     interface ITask extends Runnable {
         String output();
     }
+
+    static class Timer {
+
+        private final long endTime;
+        private final long startTime;
+
+        private int laps;
+        private long elapsed;
+        private long previous;
+        private long mean;
+        private long M2;
+        private long standardDeviation;
+
+        private Timer(long expectedMillis) {
+            startTime = System.nanoTime();
+            endTime = startTime + expectedMillis * 1000L;
+            laps = 0;
+            previous = startTime;
+            mean = 0L;
+            M2 = 0L;
+            standardDeviation = 0L;
+        }
+
+        static Timer start(long expectedMillis) {
+            return new Timer(expectedMillis);
+        }
+
+        boolean finished() {
+            return endTime >= System.nanoTime();
+        }
+
+        void lap() {
+            long current = System.nanoTime();
+            elapsed = current - previous;
+            previous = current;
+            laps++;
+            long delta = elapsed - mean;
+            mean += delta / laps;
+            M2 += delta * (elapsed - mean);
+            standardDeviation = M2 / laps;
+        }
+
+        void print() {
+            System.out.println("lap=" + laps + ", elapsed=" + elapsed + ", mean=" + mean + ", sigma^2="
+                    + standardDeviation);
+        }
+    }
 }
