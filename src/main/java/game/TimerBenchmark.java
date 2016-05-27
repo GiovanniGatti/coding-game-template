@@ -29,7 +29,6 @@ public class TimerBenchmark {
     @OutputTimeUnit(TimeUnit.MICROSECONDS)
     public void multiple_laps_with_short_sleep() throws InterruptedException {
         Timer timer = Timer.start(100);
-        timer.lap();
         while (!timer.finished()) {
             TimeUnit.MICROSECONDS.sleep(100);
             timer.lap();
@@ -41,7 +40,6 @@ public class TimerBenchmark {
     @OutputTimeUnit(TimeUnit.MILLISECONDS)
     public void multiple_laps_with_log_sleep() throws InterruptedException {
         Timer timer = Timer.start(100);
-        timer.lap();
         while (!timer.finished()) {
             TimeUnit.MILLISECONDS.sleep(1);
             timer.lap();
