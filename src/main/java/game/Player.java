@@ -62,6 +62,11 @@ final class Player {
         String output();
     }
 
+    // Change it to sample standard deviation instead of population standard deviation
+    /*
+     * See more https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Online_algorithm
+     * http://www.alcula.com/calculators/statistics/variance/
+     */
     static class Timer {
 
         private final long endTime;
@@ -70,9 +75,9 @@ final class Player {
         private int laps;
         private long elapsed;
         private long previous;
-        private long mean;
-        private long M2;
-        private long standardDeviation;
+        private double mean;
+        private double M2;
+        private double variance;
 
         private Timer(long expectedMillis) {
             startTime = System.nanoTime();
@@ -81,7 +86,7 @@ final class Player {
             previous = startTime;
             mean = 0L;
             M2 = 0L;
-            standardDeviation = 0L;
+            variance = 0L;
         }
 
         static Timer start(long expectedMillis) {
@@ -89,7 +94,7 @@ final class Player {
         }
 
         boolean finished() {
-            return endTime >= System.nanoTime();
+            return endTime < System.nanoTime();
         }
 
         void lap() {
@@ -97,15 +102,17 @@ final class Player {
             elapsed = current - previous;
             previous = current;
             laps++;
-            long delta = elapsed - mean;
+            double delta = elapsed - mean;
             mean += delta / laps;
             M2 += delta * (elapsed - mean);
-            standardDeviation = M2 / laps;
+            if (laps > 1) {
+                variance = M2 / (laps - 1);
+            }
         }
 
         void print() {
-            System.out.println("lap=" + laps + ", elapsed=" + elapsed + ", mean=" + mean + ", sigma^2="
-                    + standardDeviation);
+            System.out.println("lap=" + laps + ", elapsed=" + elapsed + ", mean=" + (long) mean + ", sigma^2="
+                    + (long) variance);
         }
     }
 }
