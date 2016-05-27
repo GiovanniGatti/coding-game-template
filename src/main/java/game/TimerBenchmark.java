@@ -26,23 +26,25 @@ public class TimerBenchmark {
 
     @Benchmark
     @BenchmarkMode(Mode.AverageTime)
-    @OutputTimeUnit(TimeUnit.MICROSECONDS)
+    @OutputTimeUnit(TimeUnit.MILLISECONDS)
     public void multiple_laps_with_short_sleep() throws InterruptedException {
         Timer timer = Timer.start(100);
-        while (!timer.finished()) {
-            TimeUnit.MICROSECONDS.sleep(100);
+        for (int i = 0; i < 1_000; i++) {
+            Thread.sleep(0, 10_000); // 100 us
             timer.lap();
+            timer.finished();
         }
     }
 
     @Benchmark
     @BenchmarkMode(Mode.AverageTime)
     @OutputTimeUnit(TimeUnit.MILLISECONDS)
-    public void multiple_laps_with_log_sleep() throws InterruptedException {
+    public void multiple_laps_with_long_sleep() throws InterruptedException {
         Timer timer = Timer.start(100);
-        while (!timer.finished()) {
-            TimeUnit.MILLISECONDS.sleep(1);
+        for (int i = 0; i < 100; i++) {
+            Thread.sleep(1); // 1ms
             timer.lap();
+            timer.finished();
         }
     }
 
