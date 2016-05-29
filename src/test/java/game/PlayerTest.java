@@ -1,14 +1,15 @@
 package game;
 
-import org.assertj.core.api.WithAssertions;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import game.Player.ITask;
 import game.Player.Task;
 import game.Player.TimedTask;
 import game.Player.Timer;
+import org.assertj.core.api.WithAssertions;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import java.util.Random;
 
 @RunWith(HierarchicalContextRunner.class)
 public class PlayerTest implements WithAssertions {
@@ -90,5 +91,26 @@ public class PlayerTest implements WithAssertions {
             start.lap();
             start.print();
         }
+    }
+
+    //it does not work!
+    @Test
+    public void tmp_4() throws InterruptedException {
+        Random random = new Random();
+        int i = 0;
+        long startTime = System.nanoTime();
+        Timer start = Timer.start(100L);
+        while (!start.finished()) {
+            int sleep = random.nextInt(3) + 1;
+            System.out.println(sleep);
+            Thread.sleep(sleep);
+            start.lap();
+            i++;
+        }
+
+        long endTime = System.nanoTime();
+        assertThat(endTime - startTime).isLessThan(100_000_000L);
+        System.out.println(i);
+        System.out.println(endTime - startTime);
     }
 }

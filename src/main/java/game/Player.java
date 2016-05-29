@@ -81,7 +81,7 @@ final class Player {
 
         private Timer(long expectedMillis) {
             startTime = System.nanoTime();
-            endTime = startTime + expectedMillis * 1000L;
+            endTime = startTime + expectedMillis * 1_000_000L;
             laps = 0;
             previous = startTime;
             mean = 0L;
@@ -94,7 +94,8 @@ final class Player {
         }
 
         boolean finished() {
-            return endTime < System.nanoTime();
+            double deviation = Math.sqrt(variance);
+            return System.nanoTime() + (mean + deviation) > endTime;
         }
 
         void lap() {
