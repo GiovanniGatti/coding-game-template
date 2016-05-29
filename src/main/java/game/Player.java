@@ -66,6 +66,11 @@ final class Player {
     /*
      * See more https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Online_algorithm
      * http://www.alcula.com/calculators/statistics/variance/
+     * https://en.wikipedia.org/wiki/68%E2%80%9395%E2%80%9399.7_rule
+     *
+     *  0 * deviation -> ~15% miss rate (expected 50% miss rate)
+     *  1 * deviation -> ~5% miss rate (expected 15.9% miss rate)
+     *  2 * deviation -> ~0.11% miss rate (expected 2.2% miss rate)
      */
     static class Timer {
 
@@ -95,7 +100,7 @@ final class Player {
 
         boolean finished() {
             double deviation = Math.sqrt(variance);
-            return System.nanoTime() + (mean + deviation) > endTime;
+            return System.nanoTime() + (mean + 2 * deviation) > endTime;
         }
 
         void lap() {
@@ -112,8 +117,8 @@ final class Player {
         }
 
         void print() {
-            System.out.println("lap=" + laps + ", elapsed=" + elapsed + ", mean=" + (long) mean + ", sigma^2="
-                    + (long) variance);
+            System.out.println("lap=" + laps + ", elapsed=" + elapsed + "," + "mean=" + (long) mean + ", sigma^2="
+                    + (long) variance + ", sigma=" + Math.sqrt(variance));
         }
     }
 }

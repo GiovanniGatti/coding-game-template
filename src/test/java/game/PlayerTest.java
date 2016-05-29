@@ -97,20 +97,29 @@ public class PlayerTest implements WithAssertions {
     @Test
     public void tmp_4() throws InterruptedException {
         Random random = new Random();
-        int i = 0;
-        long startTime = System.nanoTime();
-        Timer start = Timer.start(100L);
-        while (!start.finished()) {
-            int sleep = random.nextInt(3) + 1;
-            System.out.println(sleep);
-            Thread.sleep(sleep);
-            start.lap();
-            i++;
-        }
+        int errors = 0;
+        for (int j = 0; j < 100_000; j++) {
+            System.out.println("j: " + j);
+            int i = 0;
+            long startTime = System.nanoTime();
+            Timer start = Timer.start(100L);
+            while (!start.finished()) {
+                int sleep = random.nextInt(3) + 1;
+                Thread.sleep(sleep);
+                start.lap();
+                i++;
+            }
 
-        long endTime = System.nanoTime();
-        assertThat(endTime - startTime).isLessThan(100_000_000L);
-        System.out.println(i);
-        System.out.println(endTime - startTime);
+            long endTime = System.nanoTime();
+            System.out.println(i);
+            System.out.println(endTime - startTime);
+            start.print();
+            if (endTime - startTime > 100_000_000L) {
+                System.out.println("error!");
+                errors++;
+            }
+            System.out.println("=====");
+        }
+        System.out.println(errors);
     }
 }
