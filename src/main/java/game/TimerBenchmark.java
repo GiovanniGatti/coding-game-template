@@ -32,6 +32,23 @@ public class TimerBenchmark {
 
     @Benchmark
     @BenchmarkMode(Mode.AverageTime)
+    @OutputTimeUnit(TimeUnit.NANOSECONDS)
+    public void single_lap_strict__base() throws InterruptedException {
+        Timer timer = Timer.start(100, 2);
+    }
+
+    @Benchmark
+    @BenchmarkMode(Mode.AverageTime)
+    @OutputTimeUnit(TimeUnit.NANOSECONDS)
+    public void single_lap_strict() throws InterruptedException {
+        Timer timer = Timer.start(100, 2);
+        timer.lap();
+        timer.finished();
+    }
+
+
+    @Benchmark
+    @BenchmarkMode(Mode.AverageTime)
     @OutputTimeUnit(TimeUnit.MILLISECONDS)
     public void multiple_laps_with_shortest_sleep() throws InterruptedException {
         Timer timer = Timer.start(100);

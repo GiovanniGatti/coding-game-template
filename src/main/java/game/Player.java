@@ -6,60 +6,66 @@ final class Player {
         // TODO: implement me!
     }
 
+    interface AI {
+
+        /**
+         * Implements the IA algorithm
+         * 
+         * @param current the current state
+         * @return the best action found
+         */
+        Action play(State current);
+    }
+
     /**
-     * Class used for execution timing
+     * Represents the game state
      */
-    static class TimedTask {
+    static final class State implements Cloneable {
 
-        private final long endTime;
+        private int playerScore;
+        private int opponentScore;
 
-        TimedTask(long millis) {
-            this.endTime = System.currentTimeMillis() + millis;
+        State() {
+            playerScore = 0;
+            opponentScore = 0;
+            // TODO: implement what a game state is (all game input variables)
         }
 
-        String exec(Task task) {
-
-            task.start();
-            try {
-                Thread.sleep(endTime - System.currentTimeMillis());
-            } catch (InterruptedException e) {
-                throw new IllegalStateException("Timing thread should not be interrupted", e);
-            }
-
-            System.out.println("Alive? " + task.isAlive());
-            task.interrupt();
-            System.out.println("Alive? " + task.isAlive());
-            String output = task.output();
-            System.out.println("Alive? " + task.isAlive());
-            try {
-                System.out.println("Alive? " + task.isAlive());
-                task.join();
-                System.out.println("Alive? " + task.isAlive());
-            } catch (InterruptedException e) {
-                throw new IllegalStateException("Thread should've been interrupted before", e);
-            }
-            System.out.println("Alive? " + task.isAlive());
-
-            return output;
-        }
-    }
-
-    static class Task extends Thread {
-
-        private ITask runnable;
-
-        Task(ITask runnable) {
-            super(runnable);
-            this.runnable = runnable;
+        /**
+         * Performs an action (which will mutate the game state)
+         * 
+         * @param action to perform
+         */
+        void perform(Action action) {
+            throw new UnsupportedOperationException("Not implemented");
         }
 
-        String output() {
-            return runnable.output();
+        @Override
+        protected State clone() {
+            throw new UnsupportedOperationException("Not implemented");
+        }
+
+        int getPlayerScore() {
+            return playerScore;
+        }
+
+        int getOpponentScore() {
+            return opponentScore;
         }
     }
 
-    interface ITask extends Runnable {
-        String output();
+    /**
+     * Represents an action that can be taken
+     */
+    static final class Action {
+
+        Action() {
+            // TODO: implement what action is
+        }
+
+        String asString() {
+            return "";
+        }
     }
 
     // Change it to sample standard deviation instead of population standard deviation
@@ -67,15 +73,12 @@ final class Player {
      * See more https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Online_algorithm
      * http://www.alcula.com/calculators/statistics/variance/
      * https://en.wikipedia.org/wiki/68%E2%80%9395%E2%80%9399.7_rule
-     *
-     *  0 * deviation -> ~15% miss rate (expected 50% miss rate)
-     *  1 * deviation -> ~5% miss rate (expected 15.9% miss rate)
-     *  2 * deviation -> ~0.11% miss rate (expected 2.2% miss rate)
      */
-    static class Timer {
+    static final class Timer {
 
         private final long endTime;
         private final long startTime;
+        private final boolean strict;
 
         private int laps;
         private long elapsed;
@@ -83,6 +86,8 @@ final class Player {
         private double mean;
         private double M2;
         private double variance;
+
+        private double security;
 
         private Timer(long expectedMillis) {
             startTime = System.nanoTime();
@@ -92,15 +97,35 @@ final class Player {
             mean = 0L;
             M2 = 0L;
             variance = 0L;
+            this.strict = false;
+        }
+
+        private Timer(long expectedMillis, double security) {
+            startTime = System.nanoTime();
+            endTime = startTime + expectedMillis * 1_000_000L;
+            laps = 0;
+            previous = startTime;
+            mean = 0L;
+            M2 = 0L;
+            variance = 0L;
+            this.strict = true;
+            this.security = security;
         }
 
         static Timer start(long expectedMillis) {
             return new Timer(expectedMillis);
         }
 
+        static Timer start(long expectedMillis, double security) {
+            return new Timer(expectedMillis, security);
+        }
+
         boolean finished() {
-            double deviation = Math.sqrt(variance);
-            return System.nanoTime() + (mean + 2 * deviation) > endTime;
+            if (strict) {
+                double deviation = Math.sqrt(variance);
+                return System.nanoTime() + (mean + security * deviation) > endTime;
+            }
+            return System.nanoTime() + mean > endTime;
         }
 
         void lap() {
@@ -110,9 +135,11 @@ final class Player {
             laps++;
             double delta = elapsed - mean;
             mean += delta / laps;
-            M2 += delta * (elapsed - mean);
-            if (laps > 1) {
-                variance = M2 / (laps - 1);
+            if (strict) {
+                M2 += delta * (elapsed - mean);
+                if (laps > 1) {
+                    variance = M2 / (laps - 1);
+                }
             }
         }
 
