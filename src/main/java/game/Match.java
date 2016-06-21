@@ -1,5 +1,7 @@
 package game;
 
+import java.util.concurrent.Callable;
+
 import game.Player.AI;
 import game.Player.Action;
 import game.Player.State;
@@ -7,58 +9,47 @@ import game.Player.State;
 /**
  * Represents a single match between any two IAs
  */
-final class Match implements Runnable {
+final class Match implements Callable<Match.MatchResult> {
 
     private final AI player;
     private final AI opponent;
-    private final StateSupplier playerStateSupplier;
-    private final StateSupplier opponentStateSupplier;
-
-    private MatchResult result;
+    private final StateSupplier stateSupplier;
 
     Match(
             AI player,
             AI opponent,
-            StateSupplier playerStateSupplier,
-            StateSupplier opponentStateSupplier) {
+            StateSupplier stateSupplier) {
 
         this.player = player;
         this.opponent = opponent;
-        this.playerStateSupplier = playerStateSupplier;
-        this.opponentStateSupplier = opponentStateSupplier;
-        this.result = null;
+        this.stateSupplier = stateSupplier;
     }
 
     @Override
-    public void run() {
+    public MatchResult call() throws Exception {
+        stateSupplier.first();
 
-        if (result != null) {
-            throw new IllegalStateException("Game should not be played twice");
-        }
-
-        State playerCurrentState = playerStateSupplier.first();
-        State opponentCurrentState = opponentStateSupplier.first();
+        State playerCurrentState = stateSupplier.playerState();
+        State opponentCurrentState = stateSupplier.opponentState();
         int rounds = 0;
 
         do {
             Action playerAction = player.play(playerCurrentState.clone());
             Action opponentAction = opponent.play(opponentCurrentState.clone());
 
-            playerCurrentState.perform(playerAction);
-            opponentCurrentState.perform(opponentAction);
+            stateSupplier.next(playerAction, opponentAction);
 
-            playerCurrentState = playerStateSupplier.next(playerCurrentState);
-            opponentCurrentState = opponentStateSupplier.next(opponentCurrentState);
+            playerCurrentState = stateSupplier.playerState();
+            opponentCurrentState = stateSupplier.opponentState();
 
             rounds++;
         } while (isNotFinished(playerCurrentState, opponentCurrentState, rounds));
 
-        result =
-                new MatchResult(
-                        playerCurrentState.getPlayerScore(),
-                        opponentCurrentState.getOpponentScore(),
-                        rounds,
-                        getWinner(playerCurrentState, opponentCurrentState, rounds));
+        return new MatchResult(
+                playerCurrentState.getPlayerScore(),
+                opponentCurrentState.getOpponentScore(),
+                rounds,
+                getWinner(playerCurrentState, opponentCurrentState, rounds));
     }
 
     /**
@@ -83,14 +74,6 @@ final class Match implements Runnable {
     static Winner getWinner(State playerState, State opponentState, int rounds) {
         // TODO: implement game ending conditions
         return Winner.OPPONENT;
-    }
-
-    public MatchResult getResult() {
-        if (result == null) {
-            throw new IllegalStateException("Game has not been played yet");
-        }
-
-        return result;
     }
 
     static final class MatchResult {
@@ -126,6 +109,16 @@ final class Match implements Runnable {
 
         public Winner getWinner() {
             return winner;
+        }
+
+        @Override
+        public String toString() {
+            return com.google.common.base.MoreObjects.toStringHelper(this)
+                    .add("playerScore", playerScore)
+                    .add("opponentScore", opponentScore)
+                    .add("rounds", rounds)
+                    .add("winner", winner)
+                    .toString();
         }
     }
 }

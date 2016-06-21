@@ -1,10 +1,28 @@
 package game;
 
+import game.Player.Action;
 import game.Player.State;
 
 interface StateSupplier {
 
-    State first();
+    /**
+     * Computes the very first state, which usually is a match set up (build maps, boards, place players into their
+     * start position...)
+     */
+    void first();
 
-    State next(State previous);
+    /**
+     * Computes the new match state based on the players' actions
+     */
+    void next(Action playerAction, Action opponentAction);
+
+    /**
+     * @return player view of the current match's state
+     */
+    State playerState();
+
+    /**
+     * @return opponent view of the current match's state
+     */
+    State opponentState();
 }
