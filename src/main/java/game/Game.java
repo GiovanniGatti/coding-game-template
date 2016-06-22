@@ -8,6 +8,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import com.google.common.base.MoreObjects;
+
 import game.Match.MatchResult;
 import game.Player.AI;
 
@@ -117,6 +119,19 @@ class Game implements Callable<Game.GameResult> {
 
         List<MatchResult> getMatchResults() {
             return Collections.unmodifiableList(matchResults);
+        }
+
+        @Override
+        public String toString() {
+            return MoreObjects.toStringHelper(this)
+                    .add("averagePlayerScore", getAveragePlayerScore())
+                    .add("averageOpponentScore", getAverageOpponentScore())
+                    .add("averageNumberOfRounds", getAverageNumberOfRounds())
+                    .add("playerWinRate", getPlayerWinRate())
+                    .add("numberOfMatches", getNumberOfMatches())
+                    .add("winner", getWinner())
+                    .add("matchResults", matchResults)
+                    .toString();
         }
     }
 }
