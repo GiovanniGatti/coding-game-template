@@ -61,7 +61,7 @@ final class Match implements Callable<Match.MatchResult> {
      */
     static boolean isNotFinished(State playerState, State opponentState, int rounds) {
         // TODO: implement game ending conditions
-        return true;
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     /**
@@ -72,8 +72,8 @@ final class Match implements Callable<Match.MatchResult> {
      * @return
      */
     static Winner getWinner(State playerState, State opponentState, int rounds) {
-        // TODO: implement game ending conditions
-        return Winner.OPPONENT;
+        // TODO: extract winner from finished game match
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     static final class MatchResult {
