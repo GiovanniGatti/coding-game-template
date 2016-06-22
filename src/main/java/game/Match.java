@@ -95,19 +95,19 @@ final class Match implements Callable<Match.MatchResult> {
             this.winner = winner;
         }
 
-        public int getPlayerScore() {
+        int getPlayerScore() {
             return playerScore;
         }
 
-        public int getOpponentScore() {
+        int getOpponentScore() {
             return opponentScore;
         }
 
-        public int getRounds() {
+        int getRounds() {
             return rounds;
         }
 
-        public Winner getWinner() {
+        Winner getWinner() {
             return winner;
         }
 
