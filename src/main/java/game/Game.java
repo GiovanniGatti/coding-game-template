@@ -1,6 +1,7 @@
 package game;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -39,63 +40,83 @@ class Game implements Callable<Game.GameResult> {
 
         List<Future<MatchResult>> futures = service.invokeAll(matches);
 
+        GameResult gameResult = new GameResult();
         for (Future<MatchResult> future : futures) {
             MatchResult matchResult = future.get();
-
+            gameResult.addMatchResult(matchResult);
         }
 
-        return null;
+        return gameResult;
     }
 
-    //TODO: keep implementing game scoring 
     static final class GameResult {
-        private double avaregePlayerScore;
-        private double avaregeOpponentScore;
-        private double avaregeNumberOfRounds;
-        private double playerWinRate;
-        private Winner winner;
+        private List<MatchResult> matchResults;
 
         private GameResult() {
-            this.avaregePlayerScore = 0.0;
-            this.avaregeOpponentScore = 0.0;
-            this.avaregeNumberOfRounds = 0.0;
-            this.playerWinRate = 0.0;
+            this.matchResults = new ArrayList<>();
         }
 
-        public double getAvaregeOpponentScore() {
-            return avaregeOpponentScore;
+        private void addMatchResult(MatchResult result) {
+            matchResults.add(result);
         }
 
-        public void setAvaregeOpponentScore(double avaregeOpponentScore) {
-            this.avaregeOpponentScore = avaregeOpponentScore;
+        double getAveragePlayerScore() {
+            double totalPlayerScore =
+                    matchResults.stream()
+                            .mapToDouble(MatchResult::getPlayerScore)
+                            .sum();
+
+            return totalPlayerScore / matchResults.size();
         }
 
-        public double getAvaregeNumberOfRounds() {
-            return avaregeNumberOfRounds;
+        double getAverageOpponentScore() {
+            double totalOpponentScore =
+                    matchResults.stream()
+                            .mapToDouble(MatchResult::getOpponentScore)
+                            .sum();
+
+            return totalOpponentScore / matchResults.size();
         }
 
-        public void setAvaregeNumberOfRounds(double avaregeNumberOfRounds) {
-            this.avaregeNumberOfRounds = avaregeNumberOfRounds;
+        double getAverageNumberOfRounds() {
+            double totalNumberOfRounds =
+                    matchResults.stream()
+                            .mapToDouble(MatchResult::getRounds)
+                            .sum();
+
+            return totalNumberOfRounds / matchResults.size();
         }
 
-        public double getPlayerWinRate() {
-            return playerWinRate;
+        double getPlayerWinRate() {
+            double numberOfPlayerVictories =
+                    matchResults.stream()
+                            .map(MatchResult::getWinner)
+                            .filter(Winner.PLAYER::equals)
+                            .count();
+
+            return numberOfPlayerVictories / matchResults.size();
         }
 
-        public void setPlayerWinRate(double playerWinRate) {
-            this.playerWinRate = playerWinRate;
+        long getNumberOfMatches() {
+            return matchResults.size();
         }
 
-        public double getAvaregePlayerScore() {
-            return avaregePlayerScore;
+        Winner getWinner() {
+            long playerVictoriesCount = matchResults.stream()
+                    .map(MatchResult::getWinner)
+                    .filter(Winner.PLAYER::equals)
+                    .count();
+
+            long opponentVictoriesCount = matchResults.stream()
+                    .map(MatchResult::getWinner)
+                    .filter(Winner.OPPONENT::equals)
+                    .count();
+
+            return playerVictoriesCount > opponentVictoriesCount ? Winner.PLAYER : Winner.OPPONENT;
         }
 
-        public void setWinner(Winner winner) {
-            this.winner = winner;
-        }
-
-        public Winner getWinner() {
-            return winner;
+        List<MatchResult> getMatchResults() {
+            return Collections.unmodifiableList(matchResults);
         }
     }
 }
