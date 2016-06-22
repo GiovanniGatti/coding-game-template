@@ -1,12 +1,26 @@
 package game;
 
+import java.util.Collections;
+import java.util.Map;
+
 final class Player {
 
     public static void main(String args[]) {
         // TODO: implement me!
     }
 
-    interface AI {
+    static abstract class AI {
+
+        private final Map<String, Object> conf;
+
+        /**
+         * Builds an AI with specified configuration.<br>
+         * If the AI does not need a configuration, an empty one may be provided.<br>
+         * It is also recommended to create a default configuration.
+         */
+        AI(Map<String, Object> conf) {
+            this.conf = Collections.unmodifiableMap(conf);
+        }
 
         /**
          * Implements the IA algorithm
@@ -14,7 +28,11 @@ final class Player {
          * @param current the current state
          * @return the best action found
          */
-        Action play(State current);
+        abstract Action play(State current);
+
+        Map<String, Object> getConf() {
+            return conf;
+        }
     }
 
     /**
