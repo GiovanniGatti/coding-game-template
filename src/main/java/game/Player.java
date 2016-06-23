@@ -9,6 +9,9 @@ final class Player {
         // TODO: implement me!
     }
 
+    /**
+     * TODO: what if the player IA is not stateless?
+     */
     static abstract class AI {
 
         private final Map<String, Object> conf;

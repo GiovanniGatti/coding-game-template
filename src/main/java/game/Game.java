@@ -48,6 +48,8 @@ class Game implements Callable<Game.GameResult> {
             gameResult.addMatchResult(matchResult);
         }
 
+        service.shutdown();
+
         return gameResult;
     }
 
