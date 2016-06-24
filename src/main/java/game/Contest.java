@@ -1,6 +1,8 @@
 package game;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -8,15 +10,20 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import com.google.common.base.MoreObjects;
+
 import game.Game.GameResult;
 import game.Player.AI;
 
+/**
+ * Play any number of AIs against each other and then check its performances
+ */
 final class Contest {
 
     private Contest() {
     }
 
-    public static ContestResult run(List<AI> ais, StateSupplier stateSupplier, int numberOfMatches)
+    static ContestResult run(List<AI> ais, StateSupplier stateSupplier, int numberOfMatches)
             throws InterruptedException, ExecutionException {
 
         ExecutorService service = Executors.newFixedThreadPool(numberOfMatches);
@@ -45,14 +52,11 @@ final class Contest {
 
                 GameResult result = future.get();
 
-                if(result.getWinner().equals(Winner.PLAYER)){
+                if (result.getWinner().equals(Winner.PLAYER)) {
                     scores[i]++;
-                }else{
+                } else {
                     scores[j]++;
                 }
-
-                //TODO: keep going... One must map the scores to each AI and output as the ContestResult
-                //printing the AI config + win rate + type + other usefull information
 
                 k++;
             }
@@ -62,18 +66,75 @@ final class Contest {
 
         service.shutdown();
 
-        return null;
+        return new ContestResult(ais, scores);
     }
 
     static class ContestResult {
 
-        ContestResult(List<AI> ais){
+        private final List<Classification> classifications;
 
+        ContestResult(List<AI> ais, int[] scores) {
+            this.classifications = new ArrayList<>();
+            for (int i = 0; i < ais.size(); i++) {
+                this.classifications.add(new Classification(ais.get(i), scores[i], ais.size() - 1));
+            }
+
+            Collections.sort(classifications);
         }
 
-        List<AI> getClassification(){
-            return null;
+        List<Classification> getClassifications() {
+            return Collections.unmodifiableList(classifications);
         }
 
+        @Override
+        public String toString() {
+            StringBuilder stringBuilder = new StringBuilder();
+            for (int i = 0; i < classifications.size(); i++) {
+                stringBuilder.append(i + 1).append("- ").append(classifications.get(i).toString()).append('\n');
+            }
+            return stringBuilder.toString();
+        }
+    }
+
+    static class Classification implements Comparable<Classification> {
+
+        static final Comparator<Classification> SCORE_COMPARATOR = Comparator.comparing(Classification::getScore);
+
+        private final AI ai;
+        private final int score;
+        private final double winRate;
+
+        Classification(AI ai, int score, int numberOfMatches) {
+            this.ai = ai;
+            this.score = score;
+            this.winRate = ((double) score) / numberOfMatches;
+        }
+
+        int getScore() {
+            return score;
+        }
+
+        AI getAi() {
+            return ai;
+        }
+
+        double getWinRate() {
+            return winRate;
+        }
+
+        @Override
+        public int compareTo(Classification o) {
+            return SCORE_COMPARATOR.compare(this, o);
+        }
+
+        @Override
+        public String toString() {
+            return MoreObjects.toStringHelper(this)
+                    .add("ai", ai.getClass().getSimpleName())
+                    .add("conf", ai.getConf())
+                    .add("winRate", winRate)
+                    .add("score", score)
+                    .toString();
+        }
     }
 }

@@ -29,6 +29,9 @@ final class Match implements Callable<Match.MatchResult> {
     public MatchResult call() throws Exception {
         stateSupplier.first();
 
+        player.reset();
+        opponent.reset();
+
         State playerCurrentState = stateSupplier.playerState();
         State opponentCurrentState = stateSupplier.opponentState();
         int rounds = 0;

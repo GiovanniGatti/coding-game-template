@@ -9,9 +9,6 @@ final class Player {
         // TODO: implement me!
     }
 
-    /**
-     * TODO: what if the player IA is not stateless?
-     */
     static abstract class AI {
 
         private final Map<String, Object> conf;
@@ -36,6 +33,13 @@ final class Player {
         Map<String, Object> getConf() {
             return conf;
         }
+
+        /**
+         * If eventually the AI is not stateless, i.e. it learns something during a game play, this method may be used
+         * to forget anything before another match. Leave it blank if IA doesn't learn anything, or you want the AI to
+         * keep its knowledge.
+         */
+        abstract void reset();
     }
 
     /**
