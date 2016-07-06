@@ -21,13 +21,13 @@ class Game implements Callable<Game.GameResult> {
 
     private final AI player;
     private final AI opponent;
-    private final StateSupplier stateSupplier;
+    private final GameEngine gameEngine;
     private final int numberOfMatches;
 
-    Game(AI player, AI opponent, StateSupplier stateSupplier, int numberOfMatches) {
+    Game(AI player, AI opponent, GameEngine gameEngine, int numberOfMatches) {
         this.player = player;
         this.opponent = opponent;
-        this.stateSupplier = stateSupplier;
+        this.gameEngine = gameEngine;
         this.numberOfMatches = numberOfMatches;
     }
 
@@ -37,7 +37,7 @@ class Game implements Callable<Game.GameResult> {
 
         List<Callable<MatchResult>> matches = new ArrayList<>();
         for (int i = 0; i < numberOfMatches; i++) {
-            matches.add(new Match(player, opponent, stateSupplier));
+            matches.add(new Match(player, opponent, gameEngine));
         }
 
         List<Future<MatchResult>> futures = service.invokeAll(matches);

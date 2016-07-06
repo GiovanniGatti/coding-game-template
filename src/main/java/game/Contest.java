@@ -23,7 +23,7 @@ final class Contest {
     private Contest() {
     }
 
-    static ContestResult run(List<AI> ais, StateSupplier stateSupplier, int numberOfMatches)
+    static ContestResult run(List<AI> ais, GameEngine gameEngine, int numberOfMatches)
             throws InterruptedException, ExecutionException {
 
         ExecutorService service = Executors.newFixedThreadPool(numberOfMatches);
@@ -33,7 +33,7 @@ final class Contest {
             AI player = ais.get(i);
             for (int j = i + 1; j < ais.size(); j++) {
                 AI opponent = ais.get(j);
-                games.add(new Game(player, opponent, stateSupplier, numberOfMatches));
+                games.add(new Game(player, opponent, gameEngine, numberOfMatches));
             }
         }
 

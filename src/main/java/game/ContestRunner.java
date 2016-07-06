@@ -13,11 +13,11 @@ public class ContestRunner {
     public static void main(String args[]) throws Exception {
         List<AI> ais = generateAIs();
 
-        StateSupplier stateSupplier = null;
+        GameEngine gameEngine = null;
 
         int numberOfMatches = 100;
 
-        ContestResult contestResult = Contest.run(ais, stateSupplier, numberOfMatches);
+        ContestResult contestResult = Contest.run(ais, gameEngine, numberOfMatches);
 
         System.out.println(contestResult);
     }

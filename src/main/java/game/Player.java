@@ -2,36 +2,44 @@ package game;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.function.IntSupplier;
 
 final class Player {
 
     public static void main(String args[]) {
         // TODO: implement me!
+        AI ai = null;
+
     }
 
     static abstract class AI {
 
         private final Map<String, Object> conf;
+        private final IntSupplier inputSupplier;
 
         /**
          * Builds an AI with specified configuration.<br>
          * If the AI does not need a configuration, an empty one may be provided.<br>
          * It is also recommended to create a default configuration.
          */
-        AI(Map<String, Object> conf) {
+        AI(Map<String, Object> conf, IntSupplier inputSupplier) {
             this.conf = Collections.unmodifiableMap(conf);
+            this.inputSupplier = inputSupplier;
         }
 
         /**
          * Implements the IA algorithm
          * 
-         * @param current the current state
          * @return the best action found
          */
-        abstract Action play(State current);
+        abstract Action[] play();
 
         Map<String, Object> getConf() {
             return conf;
+        }
+
+        protected int readInput() {
+            return inputSupplier.getAsInt();
         }
 
         /**
@@ -43,46 +51,9 @@ final class Player {
     }
 
     /**
-     * Represents the game state
-     */
-    static final class State implements Cloneable {
-
-        private int playerScore;
-        private int opponentScore;
-
-        State() {
-            playerScore = 0;
-            opponentScore = 0;
-            // TODO: implement what a game state is (all game input variables)
-        }
-
-        /**
-         * Performs an action (which will mutate the game state)
-         * 
-         * @param action to perform
-         */
-        void perform(Action action) {
-            throw new UnsupportedOperationException("Not implemented");
-        }
-
-        @Override
-        protected State clone() {
-            throw new UnsupportedOperationException("Not implemented");
-        }
-
-        int getPlayerScore() {
-            return playerScore;
-        }
-
-        int getOpponentScore() {
-            return opponentScore;
-        }
-    }
-
-    /**
      * Represents an action that can be taken
      */
-    static final class Action {
+    static class Action {
 
         Action() {
             // TODO: implement what action is

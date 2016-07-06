@@ -4,7 +4,6 @@ import java.util.concurrent.Callable;
 
 import game.Player.AI;
 import game.Player.Action;
-import game.Player.State;
 
 /**
  * Represents a single match between any two IAs
@@ -13,70 +12,38 @@ final class Match implements Callable<Match.MatchResult> {
 
     private final AI player;
     private final AI opponent;
-    private final StateSupplier stateSupplier;
+    private final GameEngine gameEngine;
 
     Match(
             AI player,
             AI opponent,
-            StateSupplier stateSupplier) {
+            GameEngine gameEngine) {
 
         this.player = player;
         this.opponent = opponent;
-        this.stateSupplier = stateSupplier;
+        this.gameEngine = gameEngine;
     }
 
     @Override
     public MatchResult call() throws Exception {
-        stateSupplier.first();
+        gameEngine.start();
 
         player.reset();
         opponent.reset();
 
-        State playerCurrentState = stateSupplier.playerState();
-        State opponentCurrentState = stateSupplier.opponentState();
-        int rounds = 0;
-
         do {
-            Action playerAction = player.play(playerCurrentState.clone());
-            Action opponentAction = opponent.play(opponentCurrentState.clone());
+            Action[] playerActions = player.play();
+            Action[] opponentActions = opponent.play();
 
-            stateSupplier.next(playerAction, opponentAction);
+            gameEngine.run(playerActions, opponentActions);
 
-            playerCurrentState = stateSupplier.playerState();
-            opponentCurrentState = stateSupplier.opponentState();
-
-            rounds++;
-        } while (isNotFinished(playerCurrentState, opponentCurrentState, rounds));
+        } while (gameEngine.getWinner() != Winner.ON_GOING);
 
         return new MatchResult(
-                playerCurrentState.getPlayerScore(),
-                opponentCurrentState.getOpponentScore(),
-                rounds,
-                getWinner(playerCurrentState, opponentCurrentState, rounds));
-    }
-
-    /**
-     * 
-     * @param playerState
-     * @param opponentState
-     * @param rounds total number of played rounds
-     * @return
-     */
-    static boolean isNotFinished(State playerState, State opponentState, int rounds) {
-        // TODO: implement game ending conditions
-        throw new UnsupportedOperationException("Not implemented");
-    }
-
-    /**
-     *
-     * @param playerState
-     * @param opponentState
-     * @param rounds total number of played rounds
-     * @return
-     */
-    static Winner getWinner(State playerState, State opponentState, int rounds) {
-        // TODO: extract winner from finished game match
-        throw new UnsupportedOperationException("Not implemented");
+                gameEngine.getPlayerScore(),
+                gameEngine.getOpponentScore(),
+                gameEngine.getNumberOfRounds(),
+                gameEngine.getWinner());
     }
 
     static final class MatchResult {

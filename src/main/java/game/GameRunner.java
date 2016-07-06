@@ -9,11 +9,11 @@ public class GameRunner {
         Player.AI player = null;
         Player.AI opponent = null;
 
-        StateSupplier stateSupplier = null;
+        GameEngine gameEngine = null;
 
         int numberOfMatches = 100;
 
-        Game game = new Game(player, opponent, stateSupplier, numberOfMatches);
+        Game game = new Game(player, opponent, gameEngine, numberOfMatches);
 
         Game.GameResult gameResult = game.call();
 

@@ -1,5 +1,5 @@
 package game;
 
 enum Winner {
-    PLAYER, OPPONENT
+    PLAYER, OPPONENT, ON_GOING
 }

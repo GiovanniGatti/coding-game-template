@@ -13,9 +13,9 @@ public class MatchRunner {
         AI player = null;
         AI opponent = null;
 
-        StateSupplier stateSupplier = null;
+        GameEngine gameEngine = null;
 
-        Match match = new Match(player, opponent, stateSupplier);
+        Match match = new Match(player, opponent, gameEngine);
 
         MatchResult matchResult = match.call();
 
