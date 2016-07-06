@@ -1,20 +1,21 @@
-package game;
+package player.match;
 
 import java.util.concurrent.Callable;
 
-import game.Player.AI;
-import game.Player.Action;
+import player.game.GameEngine;
+import player.Player.AI;
+import player.Player.Action;
 
 /**
  * Represents a single match between any two IAs
  */
-final class Match implements Callable<Match.MatchResult> {
+public final class Match implements Callable<Match.MatchResult> {
 
     private final AI player;
     private final AI opponent;
     private final GameEngine gameEngine;
 
-    Match(
+    public Match(
             AI player,
             AI opponent,
             GameEngine gameEngine) {
@@ -46,7 +47,7 @@ final class Match implements Callable<Match.MatchResult> {
                 gameEngine.getWinner());
     }
 
-    static final class MatchResult {
+    public static final class MatchResult {
 
         private final int playerScore;
         private final int opponentScore;
@@ -65,19 +66,19 @@ final class Match implements Callable<Match.MatchResult> {
             this.winner = winner;
         }
 
-        int getPlayerScore() {
+        public int getPlayerScore() {
             return playerScore;
         }
 
-        int getOpponentScore() {
+        public int getOpponentScore() {
             return opponentScore;
         }
 
-        int getRounds() {
+        public int getRounds() {
             return rounds;
         }
 
-        Winner getWinner() {
+        public Winner getWinner() {
             return winner;
         }
 

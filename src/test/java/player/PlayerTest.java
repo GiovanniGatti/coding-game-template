@@ -1,4 +1,4 @@
-package game;
+package player;
 
 import org.assertj.core.api.WithAssertions;
 import org.junit.runner.RunWith;

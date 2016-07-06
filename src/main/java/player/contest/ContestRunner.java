@@ -1,9 +1,9 @@
-package game;
+package player.contest;
 
 import java.util.List;
 
-import game.Contest.ContestResult;
-import game.Player.AI;
+import player.game.GameEngine;
+import player.Player.AI;
 
 /**
  * Play a contest
@@ -17,7 +17,7 @@ public class ContestRunner {
 
         int numberOfMatches = 100;
 
-        ContestResult contestResult = Contest.run(ais, gameEngine, numberOfMatches);
+        Contest.ContestResult contestResult = Contest.run(ais, gameEngine, numberOfMatches);
 
         System.out.println(contestResult);
     }

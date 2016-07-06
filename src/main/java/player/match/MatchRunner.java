@@ -1,7 +1,7 @@
-package game;
+package player.match;
 
-import game.Match.MatchResult;
-import game.Player.AI;
+import player.game.GameEngine;
+import player.Player.AI;
 
 /**
  * Plays a single match between to AIs
@@ -17,7 +17,7 @@ public class MatchRunner {
 
         Match match = new Match(player, opponent, gameEngine);
 
-        MatchResult matchResult = match.call();
+        Match.MatchResult matchResult = match.call();
 
         System.out.println(matchResult);
     }

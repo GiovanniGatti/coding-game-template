@@ -1,4 +1,4 @@
 @ParametersAreNonnullByDefault
-package game;
+package player;
 
 import javax.annotation.ParametersAreNonnullByDefault;

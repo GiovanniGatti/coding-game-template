@@ -1,4 +1,6 @@
-package game;
+package player.game;
+
+import player.Player;
 
 /**
  * Plays multiple matches between to AIs

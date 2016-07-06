@@ -1,4 +1,4 @@
-package game;
+package player.contest;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -12,8 +12,11 @@ import java.util.concurrent.Future;
 
 import com.google.common.base.MoreObjects;
 
-import game.Game.GameResult;
-import game.Player.AI;
+import player.Player.AI;
+import player.game.Game;
+import player.game.Game.GameResult;
+import player.game.GameEngine;
+import player.match.Winner;
 
 /**
  * Play any number of AIs against each other and then check its performances

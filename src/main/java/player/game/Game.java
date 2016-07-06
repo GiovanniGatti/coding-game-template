@@ -1,4 +1,4 @@
-package game;
+package player.game;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -10,21 +10,23 @@ import java.util.concurrent.Future;
 
 import com.google.common.base.MoreObjects;
 
-import game.Match.MatchResult;
-import game.Player.AI;
+import player.Player.AI;
+import player.match.Match;
+import player.match.Match.MatchResult;
+import player.match.Winner;
 
 /**
  * Plays multiple matches between to AIs. It is useful when IAs or State supplier are not deterministic,
  * otherwise, a single match is enough
  */
-class Game implements Callable<Game.GameResult> {
+public class Game implements Callable<Game.GameResult> {
 
     private final AI player;
     private final AI opponent;
     private final GameEngine gameEngine;
     private final int numberOfMatches;
 
-    Game(AI player, AI opponent, GameEngine gameEngine, int numberOfMatches) {
+    public Game(AI player, AI opponent, GameEngine gameEngine, int numberOfMatches) {
         this.player = player;
         this.opponent = opponent;
         this.gameEngine = gameEngine;
@@ -53,7 +55,7 @@ class Game implements Callable<Game.GameResult> {
         return gameResult;
     }
 
-    static final class GameResult {
+    public static final class GameResult {
         private List<MatchResult> matchResults;
 
         private GameResult() {
@@ -64,7 +66,7 @@ class Game implements Callable<Game.GameResult> {
             matchResults.add(result);
         }
 
-        double getAveragePlayerScore() {
+        public double getAveragePlayerScore() {
             double totalPlayerScore =
                     matchResults.stream()
                             .mapToDouble(MatchResult::getPlayerScore)
@@ -73,7 +75,7 @@ class Game implements Callable<Game.GameResult> {
             return totalPlayerScore / matchResults.size();
         }
 
-        double getAverageOpponentScore() {
+        public double getAverageOpponentScore() {
             double totalOpponentScore =
                     matchResults.stream()
                             .mapToDouble(MatchResult::getOpponentScore)
@@ -82,7 +84,7 @@ class Game implements Callable<Game.GameResult> {
             return totalOpponentScore / matchResults.size();
         }
 
-        double getAverageNumberOfRounds() {
+        public double getAverageNumberOfRounds() {
             double totalNumberOfRounds =
                     matchResults.stream()
                             .mapToDouble(MatchResult::getRounds)
@@ -91,7 +93,7 @@ class Game implements Callable<Game.GameResult> {
             return totalNumberOfRounds / matchResults.size();
         }
 
-        double getPlayerWinRate() {
+        public double getPlayerWinRate() {
             double numberOfPlayerVictories =
                     matchResults.stream()
                             .map(MatchResult::getWinner)
@@ -101,11 +103,11 @@ class Game implements Callable<Game.GameResult> {
             return numberOfPlayerVictories / matchResults.size();
         }
 
-        long getNumberOfMatches() {
+        public long getNumberOfMatches() {
             return matchResults.size();
         }
 
-        Winner getWinner() {
+        public Winner getWinner() {
             long playerVictoriesCount = matchResults.stream()
                     .map(MatchResult::getWinner)
                     .filter(Winner.PLAYER::equals)
@@ -119,7 +121,7 @@ class Game implements Callable<Game.GameResult> {
             return playerVictoriesCount > opponentVictoriesCount ? Winner.PLAYER : Winner.OPPONENT;
         }
 
-        List<MatchResult> getMatchResults() {
+        public List<MatchResult> getMatchResults() {
             return Collections.unmodifiableList(matchResults);
         }
 

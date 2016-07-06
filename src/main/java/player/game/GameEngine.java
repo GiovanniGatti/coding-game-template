@@ -1,8 +1,9 @@
-package game;
+package player.game;
 
-import game.Player.Action;
+import player.Player.Action;
+import player.match.Winner;
 
-interface GameEngine {
+public interface GameEngine {
 
     /**
      * Computes the very first state, which usually is a match set up (build maps, boards, place players into their

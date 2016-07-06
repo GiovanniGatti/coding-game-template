@@ -1,6 +1,7 @@
-package game;
+package player.util;
 
-import game.Player.Timer;
+import java.util.concurrent.TimeUnit;
+
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Mode;
@@ -9,8 +10,6 @@ import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
-
-import java.util.concurrent.TimeUnit;
 
 public class TimerBenchmark {
 
@@ -46,7 +45,6 @@ public class TimerBenchmark {
         timer.finished();
     }
 
-
     @Benchmark
     @BenchmarkMode(Mode.AverageTime)
     @OutputTimeUnit(TimeUnit.MILLISECONDS)
@@ -67,7 +65,6 @@ public class TimerBenchmark {
             busyWaitMicros(10); // 10 us
         }
     }
-
 
     @Benchmark
     @BenchmarkMode(Mode.AverageTime)
@@ -117,7 +114,6 @@ public class TimerBenchmark {
             ;
         }
     }
-
 
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()
