@@ -1,6 +1,7 @@
 package player.game;
 
 import player.Player;
+import player.engine.GameEngine;
 
 /**
  * Plays multiple matches between to AIs

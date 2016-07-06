@@ -2,7 +2,7 @@ package player.contest;
 
 import java.util.List;
 
-import player.game.GameEngine;
+import player.engine.GameEngine;
 import player.Player.AI;
 
 /**

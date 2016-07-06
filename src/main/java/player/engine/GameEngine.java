@@ -1,7 +1,6 @@
-package player.game;
+package player.engine;
 
 import player.Player.Action;
-import player.match.Winner;
 
 public interface GameEngine {
 

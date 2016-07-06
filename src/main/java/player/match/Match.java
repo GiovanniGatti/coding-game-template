@@ -2,9 +2,10 @@ package player.match;
 
 import java.util.concurrent.Callable;
 
-import player.game.GameEngine;
+import player.engine.GameEngine;
 import player.Player.AI;
 import player.Player.Action;
+import player.engine.Winner;
 
 /**
  * Represents a single match between any two IAs

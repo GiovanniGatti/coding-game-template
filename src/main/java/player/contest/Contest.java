@@ -15,8 +15,8 @@ import com.google.common.base.MoreObjects;
 import player.Player.AI;
 import player.game.Game;
 import player.game.Game.GameResult;
-import player.game.GameEngine;
-import player.match.Winner;
+import player.engine.GameEngine;
+import player.engine.Winner;
 
 /**
  * Play any number of AIs against each other and then check its performances

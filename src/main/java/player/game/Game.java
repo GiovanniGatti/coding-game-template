@@ -13,7 +13,8 @@ import com.google.common.base.MoreObjects;
 import player.Player.AI;
 import player.match.Match;
 import player.match.Match.MatchResult;
-import player.match.Winner;
+import player.engine.Winner;
+import player.engine.GameEngine;
 
 /**
  * Plays multiple matches between to AIs. It is useful when IAs or State supplier are not deterministic,

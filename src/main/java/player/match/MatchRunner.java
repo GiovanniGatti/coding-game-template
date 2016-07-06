@@ -1,6 +1,6 @@
 package player.match;
 
-import player.game.GameEngine;
+import player.engine.GameEngine;
 import player.Player.AI;
 
 /**
