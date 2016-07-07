@@ -27,6 +27,7 @@ public class Game implements Callable<Game.GameResult> {
     private final GameEngine gameEngine;
     private final int numberOfMatches;
 
+    //TODO: bad design -  multiple threads will share the same gameEngine and player/opponents
     public Game(AI player, AI opponent, GameEngine gameEngine, int numberOfMatches) {
         this.player = player;
         this.opponent = opponent;

@@ -41,13 +41,6 @@ public final class Player {
         protected int readInput() {
             return inputSupplier.getAsInt();
         }
-
-        /**
-         * If eventually the AI is not stateless, i.e. it learns something during a game play, this method may be used
-         * to forget anything before another match. Leave it blank if IA doesn't learn anything, or you want the AI to
-         * keep its knowledge.
-         */
-        public abstract void reset();
     }
 
     /**

@@ -2,9 +2,9 @@ package player.match;
 
 import java.util.concurrent.Callable;
 
-import player.engine.GameEngine;
 import player.Player.AI;
 import player.Player.Action;
+import player.engine.GameEngine;
 import player.engine.Winner;
 
 /**
@@ -16,6 +16,7 @@ public final class Match implements Callable<Match.MatchResult> {
     private final AI opponent;
     private final GameEngine gameEngine;
 
+    // TODO: how to bind AI input stream to gameEngine's output stream?
     public Match(
             AI player,
             AI opponent,
@@ -30,16 +31,13 @@ public final class Match implements Callable<Match.MatchResult> {
     public MatchResult call() throws Exception {
         gameEngine.start();
 
-        player.reset();
-        opponent.reset();
-
         do {
             Action[] playerActions = player.play();
             Action[] opponentActions = opponent.play();
 
             gameEngine.run(playerActions, opponentActions);
 
-        } while (gameEngine.getWinner() != Winner.ON_GOING);
+        } while (gameEngine.getWinner() == Winner.ON_GOING);
 
         return new MatchResult(
                 gameEngine.getPlayerScore(),

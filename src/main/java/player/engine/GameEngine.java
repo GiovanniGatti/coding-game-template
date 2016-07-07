@@ -22,6 +22,16 @@ public interface GameEngine {
     Winner getWinner();
 
     /**
+     * Player input stream.
+     */
+    int playerInput();
+
+    /**
+     * Opponent input stream.
+     */
+    int opponentInput();
+
+    /**
      * Returns the current player score
      */
     int getPlayerScore();
