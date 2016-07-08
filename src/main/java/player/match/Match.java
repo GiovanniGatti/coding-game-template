@@ -1,6 +1,7 @@
 package player.match;
 
 import java.util.concurrent.Callable;
+import java.util.function.Function;
 
 import player.Player.AI;
 import player.Player.Action;
@@ -10,7 +11,7 @@ import player.engine.Winner;
 /**
  * Represents a single match between any two IAs
  */
-public final class Match implements Callable<Match.MatchResult> {
+public final class Match<P, O> implements Callable<Match.MatchResult> {
 
     private final AI player;
     private final AI opponent;
@@ -18,12 +19,16 @@ public final class Match implements Callable<Match.MatchResult> {
 
     // TODO: how to bind AI input stream to gameEngine's output stream?
     public Match(
-            AI player,
-            AI opponent,
+            Function<P, AI>  playerCtor,
+            //TODO: how to do with parameters instantiation?
+            P playerParameters,
+            Function<O, AI>  opponentCtor,
+            O opponentParameters,
+            //TODO: game engine instantiation
             GameEngine gameEngine) {
 
-        this.player = player;
-        this.opponent = opponent;
+        this.player = playerCtor.apply(playerParameters);
+        this.opponent = opponentCtor.apply(opponentParameters);
         this.gameEngine = gameEngine;
     }
 
