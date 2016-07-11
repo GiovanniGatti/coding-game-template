@@ -5,6 +5,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.IntSupplier;
 
 import org.assertj.core.api.WithAssertions;
@@ -26,8 +28,12 @@ public class MatchTest implements WithAssertions {
         GameEngine gameEngine = Mockito.mock(GameEngine.class);
         when(gameEngine.getWinner()).thenReturn(Winner.PLAYER);
 
+        End simple = AIBuilder.newBuilder()
+                .withCtor(MockedAI::new)
+                .withConf(new HashMap<>());
+
         Match match =
-                new Match<>(MockedAI::new, MockedAI::new, MockedGE::new);
+                new Match<>(simple, MockedAI::new, MockedGE::new);
 
         match.call();
 
@@ -77,7 +83,7 @@ public class MatchTest implements WithAssertions {
 
     public static class MockedAI extends AI {
 
-        public MockedAI(IntSupplier inputSupplier) {
+        public MockedAI(Map<String, Object> conf, IntSupplier inputSupplier) {
             super(inputSupplier);
         }
 

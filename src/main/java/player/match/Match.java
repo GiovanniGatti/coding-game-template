@@ -26,25 +26,24 @@ public final class Match<G> implements Callable<Match.MatchResult> {
 
     //TODO: idea will probably work, but how to deal with so many constructors? Should I create a AI builder?
     public Match(
-            BiFunction<Map<String, Object>, IntSupplier, AI> playerCtor,
-            Map<String, Object> playerConf,
+            End player,
             BiFunction<Map<String, Object>, IntSupplier, AI> opponentCtor,
             Map<String, Object> opponentConf,
             Function<G, GameEngine> gameEngineCtor,
             G gameEngineConf) {
 
         this.gameEngine = gameEngineCtor.apply(gameEngineConf);
-        this.player = playerCtor.apply(playerConf, gameEngine::playerInput);
+        this.player = player.build();
         this.opponent = opponentCtor.apply(opponentConf, gameEngine::opponentInput);
     }
 
     public Match(
-            Function<IntSupplier, AI> playerCtor,
+            End player,
             Function<IntSupplier, AI> opponentCtor,
             Supplier<GameEngine> gameEngineCtor) {
 
         this.gameEngine = gameEngineCtor.get();
-        this.player = playerCtor.apply(gameEngine::playerInput);
+        this.player = player.build();
         this.opponent = opponentCtor.apply(gameEngine::opponentInput);
     }
 
