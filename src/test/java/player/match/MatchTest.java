@@ -4,6 +4,9 @@ import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Collections;
+import java.util.function.IntSupplier;
+
 import org.assertj.core.api.WithAssertions;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -23,7 +26,8 @@ public class MatchTest implements WithAssertions {
         GameEngine gameEngine = Mockito.mock(GameEngine.class);
         when(gameEngine.getWinner()).thenReturn(Winner.PLAYER);
 
-        Match match = new Match(player, opponent, gameEngine);
+        Match match =
+                new Match<>(MockedAI::new, MockedAI::new, MockedGE::new);
 
         match.call();
 
@@ -44,9 +48,9 @@ public class MatchTest implements WithAssertions {
         GameEngine gameEngine = Mockito.mock(GameEngine.class);
         when(gameEngine.getWinner()).thenReturn(Winner.PLAYER);
 
-        Match match = new Match(player, opponent, gameEngine);
+        // Match match = new Match(player, opponent, gameEngine);
 
-        match.call();
+        // match.call();
 
         ArgumentCaptor<Action[]> playerActions = ArgumentCaptor.forClass(Action[].class);
         ArgumentCaptor<Action[]> opponentActions = ArgumentCaptor.forClass(Action[].class);
@@ -70,4 +74,64 @@ public class MatchTest implements WithAssertions {
     public void test_multithreading() throws Exception {
 
     }
+
+    public static class MockedAI extends AI {
+
+        public MockedAI(IntSupplier inputSupplier) {
+            super(inputSupplier);
+        }
+
+        @Override
+        public Action[] play() {
+            return new Action[0];
+        }
+    }
+
+    private static class MockedGE implements GameEngine {
+
+        public MockedGE() {
+
+        }
+
+        @Override
+        public void start() {
+
+        }
+
+        @Override
+        public void run(Action[] playerActions, Action[] opponentActions) {
+
+        }
+
+        @Override
+        public Winner getWinner() {
+            return null;
+        }
+
+        @Override
+        public int playerInput() {
+            return 0;
+        }
+
+        @Override
+        public int opponentInput() {
+            return 0;
+        }
+
+        @Override
+        public int getPlayerScore() {
+            return 0;
+        }
+
+        @Override
+        public int getOpponentScore() {
+            return 0;
+        }
+
+        @Override
+        public int getNumberOfRounds() {
+            return 0;
+        }
+    }
+
 }

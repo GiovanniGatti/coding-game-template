@@ -15,11 +15,11 @@ public class MatchRunner {
 
         GameEngine gameEngine = null;
 
-        Match match = new Match(player, opponent, gameEngine);
+//        Match match = new Match(player, opponent, gameEngine);
 
-        Match.MatchResult matchResult = match.call();
-
-        System.out.println(matchResult);
+//        Match.MatchResult matchResult = match.call();
+//
+//        System.out.println(matchResult);
     }
 
 }

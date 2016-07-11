@@ -3,13 +3,17 @@ package player.game;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.function.BiFunction;
+import java.util.function.IntSupplier;
 
 import com.google.common.base.MoreObjects;
 
+import player.Player;
 import player.Player.AI;
 import player.match.Match;
 import player.match.Match.MatchResult;
@@ -35,13 +39,27 @@ public class Game implements Callable<Game.GameResult> {
         this.numberOfMatches = numberOfMatches;
     }
 
+    public Game(
+            BiFunction<Map<String, Object>, IntSupplier, AI> playerCtor,
+            Map<String, Object> playerConf,
+            BiFunction<Map<String, Object>, IntSupplier, AI> opponentCtor,
+            Map<String, Object> opponentConf,
+            GameEngine gameEngine,
+            int numberOfMatches) {
+
+        this.player = playerCtor.apply(playerConf, gameEngine::playerInput);
+        this.opponent = opponentCtor.apply(opponentConf, gameEngine::opponentInput);
+        this.gameEngine = gameEngine;
+        this.numberOfMatches = numberOfMatches;
+    }
+
     @Override
     public GameResult call() throws Exception {
         ExecutorService service = Executors.newFixedThreadPool(numberOfMatches);
 
         List<Callable<MatchResult>> matches = new ArrayList<>();
         for (int i = 0; i < numberOfMatches; i++) {
-            matches.add(new Match(player, opponent, gameEngine));
+//            matches.add(new Match(player, opponent, gameEngine));
         }
 
         List<Future<MatchResult>> futures = service.invokeAll(matches);

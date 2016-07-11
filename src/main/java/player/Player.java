@@ -19,12 +19,18 @@ public final class Player {
 
         /**
          * Builds an AI with specified configuration.<br>
-         * If the AI does not need a configuration, an empty one may be provided.<br>
-         * It is also recommended to create a default configuration.
+         * It is recommended to create a default configuration.
          */
         public AI(Map<String, Object> conf, IntSupplier inputSupplier) {
             this.conf = Collections.unmodifiableMap(conf);
             this.inputSupplier = inputSupplier;
+        }
+
+        /**
+         * Builds an AI with an empty configuration.
+         */
+        public AI(IntSupplier inputSupplier) {
+            this(Collections.emptyMap(), inputSupplier);
         }
 
         /**

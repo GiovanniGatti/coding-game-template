@@ -1,7 +1,11 @@
 package player.match;
 
+import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.IntSupplier;
+import java.util.function.Supplier;
 
 import player.Player.AI;
 import player.Player.Action;
@@ -9,27 +13,51 @@ import player.engine.GameEngine;
 import player.engine.Winner;
 
 /**
+ *
  * Represents a single match between any two IAs
+ *
+ * @param <G> the type of the game engine input
  */
-public final class Match<P, O> implements Callable<Match.MatchResult> {
+public final class Match<G> implements Callable<Match.MatchResult> {
 
     private final AI player;
     private final AI opponent;
     private final GameEngine gameEngine;
 
-    // TODO: how to bind AI input stream to gameEngine's output stream?
+    //TODO: idea will probably work, but how to deal with so many constructors? Should I create a AI builder?
     public Match(
-            Function<P, AI>  playerCtor,
-            //TODO: how to do with parameters instantiation?
-            P playerParameters,
-            Function<O, AI>  opponentCtor,
-            O opponentParameters,
-            //TODO: game engine instantiation
-            GameEngine gameEngine) {
+            BiFunction<Map<String, Object>, IntSupplier, AI> playerCtor,
+            Map<String, Object> playerConf,
+            BiFunction<Map<String, Object>, IntSupplier, AI> opponentCtor,
+            Map<String, Object> opponentConf,
+            Function<G, GameEngine> gameEngineCtor,
+            G gameEngineConf) {
 
-        this.player = playerCtor.apply(playerParameters);
-        this.opponent = opponentCtor.apply(opponentParameters);
-        this.gameEngine = gameEngine;
+        this.gameEngine = gameEngineCtor.apply(gameEngineConf);
+        this.player = playerCtor.apply(playerConf, gameEngine::playerInput);
+        this.opponent = opponentCtor.apply(opponentConf, gameEngine::opponentInput);
+    }
+
+    public Match(
+            Function<IntSupplier, AI> playerCtor,
+            Function<IntSupplier, AI> opponentCtor,
+            Supplier<GameEngine> gameEngineCtor) {
+
+        this.gameEngine = gameEngineCtor.get();
+        this.player = playerCtor.apply(gameEngine::playerInput);
+        this.opponent = opponentCtor.apply(gameEngine::opponentInput);
+    }
+
+    public Match(
+            BiFunction<Map<String, Object>, IntSupplier, AI> playerCtor,
+            Map<String, Object> playerConf,
+            BiFunction<Map<String, Object>, IntSupplier, AI> opponentCtor,
+            Map<String, Object> opponentConf,
+            Supplier<GameEngine> gameEngineCtor) {
+
+        this.gameEngine = gameEngineCtor.get();
+        this.player = playerCtor.apply(playerConf, gameEngine::playerInput);
+        this.opponent = opponentCtor.apply(opponentConf, gameEngine::opponentInput);
     }
 
     @Override
