@@ -4,36 +4,41 @@ import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.IntSupplier;
 
 import org.assertj.core.api.WithAssertions;
-import org.junit.Test;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import player.Player.AI;
 import player.Player.Action;
+import player.ai.util.AIBuilder;
+import player.ai.util.AIInput;
 import player.engine.GameEngine;
 import player.engine.Winner;
 
 public class MatchTest implements WithAssertions {
 
     @Test
+    @DisplayName("ha!")
     public void start_up_game_engine() throws Exception {
-        AI player = Mockito.mock(AI.class);
-        AI opponent = Mockito.mock(AI.class);
         GameEngine gameEngine = Mockito.mock(GameEngine.class);
         when(gameEngine.getWinner()).thenReturn(Winner.PLAYER);
 
-        End simple = AIBuilder.newBuilder()
+        AIInput player = AIBuilder.newBuilder()
+                .withCtor(MockedAI::new)
+                .withConf(new HashMap<>());
+
+        AIInput opponent = AIBuilder.newBuilder()
                 .withCtor(MockedAI::new)
                 .withConf(new HashMap<>());
 
         Match match =
-                new Match<>(simple, MockedAI::new, MockedGE::new);
+                new Match(player, opponent, MockedGE::new);
 
         match.call();
 
@@ -89,7 +94,8 @@ public class MatchTest implements WithAssertions {
 
         @Override
         public Action[] play() {
-            return new Action[0];
+            Action action = new Action();
+            return new Action[] { action };
         }
     }
 

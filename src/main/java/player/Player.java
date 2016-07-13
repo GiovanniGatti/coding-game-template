@@ -36,7 +36,7 @@ public final class Player {
         /**
          * Implements the IA algorithm
          * 
-         * @return the best action found
+         * @return the best ordered set of actions found
          */
         public abstract Action[] play();
 
@@ -54,11 +54,11 @@ public final class Player {
      */
     public static class Action {
 
-        Action() {
+        public Action() {
             // TODO: implement what action is
         }
 
-        String asString() {
+        public String asString() {
             return "";
         }
     }

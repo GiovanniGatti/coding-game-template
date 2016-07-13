@@ -1,14 +1,11 @@
 package player.match;
 
-import java.util.Map;
 import java.util.concurrent.Callable;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 
 import player.Player.AI;
 import player.Player.Action;
+import player.ai.util.AIInput;
 import player.engine.GameEngine;
 import player.engine.Winner;
 
@@ -16,47 +13,21 @@ import player.engine.Winner;
  *
  * Represents a single match between any two IAs
  *
- * @param <G> the type of the game engine input
  */
-public final class Match<G> implements Callable<Match.MatchResult> {
+public final class Match implements Callable<Match.MatchResult> {
 
     private final AI player;
     private final AI opponent;
     private final GameEngine gameEngine;
 
-    //TODO: idea will probably work, but how to deal with so many constructors? Should I create a AI builder?
     public Match(
-            End player,
-            BiFunction<Map<String, Object>, IntSupplier, AI> opponentCtor,
-            Map<String, Object> opponentConf,
-            Function<G, GameEngine> gameEngineCtor,
-            G gameEngineConf) {
+            AIInput player,
+            AIInput opponent,
+            Supplier<GameEngine> gameEngine) {
 
-        this.gameEngine = gameEngineCtor.apply(gameEngineConf);
-        this.player = player.build();
-        this.opponent = opponentCtor.apply(opponentConf, gameEngine::opponentInput);
-    }
-
-    public Match(
-            End player,
-            Function<IntSupplier, AI> opponentCtor,
-            Supplier<GameEngine> gameEngineCtor) {
-
-        this.gameEngine = gameEngineCtor.get();
-        this.player = player.build();
-        this.opponent = opponentCtor.apply(gameEngine::opponentInput);
-    }
-
-    public Match(
-            BiFunction<Map<String, Object>, IntSupplier, AI> playerCtor,
-            Map<String, Object> playerConf,
-            BiFunction<Map<String, Object>, IntSupplier, AI> opponentCtor,
-            Map<String, Object> opponentConf,
-            Supplier<GameEngine> gameEngineCtor) {
-
-        this.gameEngine = gameEngineCtor.get();
-        this.player = playerCtor.apply(playerConf, gameEngine::playerInput);
-        this.opponent = opponentCtor.apply(opponentConf, gameEngine::opponentInput);
+        this.gameEngine = gameEngine.get();
+        this.player = player.withInputSupplier(this.gameEngine::playerInput).build();
+        this.opponent = opponent.withInputSupplier(this.gameEngine::opponentInput).build();
     }
 
     @Override
