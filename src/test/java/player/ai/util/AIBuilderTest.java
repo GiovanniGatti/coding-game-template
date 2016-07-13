@@ -15,22 +15,16 @@ import java.util.function.IntSupplier;
 import org.assertj.core.api.WithAssertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 
-@ExtendWith(MockitoExtension.class)
 public class AIBuilderTest implements WithAssertions {
-
-    //    @Mock
-    IntSupplier inputSupplier = Mockito.mock(IntSupplier.class);
-
 
     @Test
     @DisplayName("Build dummy non-configurable AI with basic conf")
     public void build_non_configurable_ai() {
         AI ai = AIBuilder.newBuilder()
                 .withCtor((Function<IntSupplier, AI>) NoOpAI::new)
-                .withInputSupplier(inputSupplier)
+                .withInputSupplier(() -> 0)
                 .build();
 
         assertThat(ai).isExactlyInstanceOf(NoOpAI.class);
@@ -46,7 +40,7 @@ public class AIBuilderTest implements WithAssertions {
         AI ai = AIBuilder.newBuilder()
                 .withCtor((BiFunction<Map<String, Object>, IntSupplier, AI>) NoOpAI::new)
                 .withConf(conf)
-                .withInputSupplier(AIBuilderTest::noOpInputStream)
+                .withInputSupplier(() -> 0)
                 .build();
 
         assertThat(ai).isExactlyInstanceOf(NoOpAI.class);
@@ -62,7 +56,7 @@ public class AIBuilderTest implements WithAssertions {
         AI ai = AIBuilder.newBuilder()
                 .withCtor((BiFunction<Map<String, Object>, IntSupplier, AI>) NoOpAI::new)
                 .withConf(conf)
-                .withInputSupplier(AIBuilderTest::noOpInputStream)
+                .withInputSupplier(() -> 0)
                 .build();
 
         // Mutate configuration
@@ -83,7 +77,7 @@ public class AIBuilderTest implements WithAssertions {
         AI ai = AIBuilder.newBuilder()
                 .withCtor((BiFunction<Map<String, Object>, IntSupplier, AI>) NoOpAI::new)
                 .withConf(conf)
-                .withInputSupplier(AIBuilderTest::noOpInputStream)
+                .withInputSupplier(() -> 0)
                 .build();
 
         // Mutate configuration
@@ -97,6 +91,8 @@ public class AIBuilderTest implements WithAssertions {
     @Test
     @DisplayName("Input supplier should be properly assigned")
     public void intput_supplier() {
+        IntSupplier inputSupplier = Mockito.mock(IntSupplier.class);
+
         AI ai = AIBuilder.newBuilder()
                 .withCtor((Function<IntSupplier, AI>) NoOpAI::new)
                 .withInputSupplier(inputSupplier)
@@ -123,10 +119,6 @@ public class AIBuilderTest implements WithAssertions {
         public void setValue(String value) {
             this.value = value;
         }
-    }
-
-    private static int noOpInputStream() {
-        return 0;
     }
 
     private static class NoOpAI extends AI {
