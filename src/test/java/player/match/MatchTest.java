@@ -16,8 +16,8 @@ import org.mockito.Mockito;
 
 import player.Player.AI;
 import player.Player.Action;
-import player.ai.util.AIBuilder;
-import player.ai.util.AIInput;
+import player.ai.builder.AIBuilder;
+import player.ai.builder.AIInput;
 import player.engine.GameEngine;
 import player.engine.Winner;
 

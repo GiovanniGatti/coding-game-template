@@ -1,4 +1,4 @@
-package player.ai.util;
+package player.ai.builder;
 
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -20,7 +20,7 @@ import org.mockito.Mockito;
 public class AIBuilderTest implements WithAssertions {
 
     @Test
-    @DisplayName("Build dummy non-configurable AI with basic conf")
+    @DisplayName("Build no-op non-configurable AI with basic conf")
     public void build_non_configurable_ai() {
         AI ai = AIBuilder.newBuilder()
                 .withCtor((Function<IntSupplier, AI>) NoOpAI::new)
@@ -32,7 +32,7 @@ public class AIBuilderTest implements WithAssertions {
     }
 
     @Test
-    @DisplayName("Build dummy configurable AI with basic conf")
+    @DisplayName("Build no-op configurable AI with basic conf")
     public void build_configurable_ai() {
         Map<String, Object> conf = new HashMap<>();
         conf.put("key", "value");
@@ -90,7 +90,7 @@ public class AIBuilderTest implements WithAssertions {
 
     @Test
     @DisplayName("Input supplier should be properly assigned")
-    public void intput_supplier() {
+    public void input_supplier() {
         IntSupplier inputSupplier = Mockito.mock(IntSupplier.class);
 
         AI ai = AIBuilder.newBuilder()

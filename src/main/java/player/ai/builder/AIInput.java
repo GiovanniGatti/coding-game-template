@@ -1,4 +1,4 @@
-package player.ai.util;
+package player.ai.builder;
 
 import java.util.function.IntSupplier;
 
