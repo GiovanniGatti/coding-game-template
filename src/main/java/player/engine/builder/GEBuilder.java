@@ -6,9 +6,6 @@ import java.util.function.Supplier;
 
 import player.engine.GameEngine;
 
-/**
- * Created by tmi on 18/07/16.
- */
 public final class GEBuilder<P, T> implements GECtor<P, T>, GEDoubleParam<P, T>, GESingleParam<P>, GEBuild {
 
     private BiFunction<P, T, GameEngine> doubleParamCtor;

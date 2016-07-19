@@ -6,9 +6,6 @@ import java.util.function.Supplier;
 
 import player.engine.GameEngine;
 
-/**
- * Created by tmi on 18/07/16.
- */
 public interface GECtor<P, T> {
 
     GEDoubleParam<P, T> withCtor(BiFunction<P, T, GameEngine> ctor);
