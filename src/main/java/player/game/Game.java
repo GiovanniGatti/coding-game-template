@@ -3,22 +3,18 @@ package player.game;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.function.BiFunction;
-import java.util.function.IntSupplier;
 
 import com.google.common.base.MoreObjects;
 
-import player.Player;
-import player.Player.AI;
+import player.ai.builder.AIInput;
+import player.engine.Winner;
+import player.engine.builder.GEBuild;
 import player.match.Match;
 import player.match.Match.MatchResult;
-import player.engine.Winner;
-import player.engine.GameEngine;
 
 /**
  * Plays multiple matches between to AIs. It is useful when IAs or State supplier are not deterministic,
@@ -26,43 +22,45 @@ import player.engine.GameEngine;
  */
 public class Game implements Callable<Game.GameResult> {
 
-    private final AI player;
-    private final AI opponent;
-    private final GameEngine gameEngine;
-    private final int numberOfMatches;
+    private static final int DEFAULT_NUMBER_OF_MATCHES = 5;
 
-    //TODO: bad design -  multiple threads will share the same gameEngine and player/opponents
-    public Game(AI player, AI opponent, GameEngine gameEngine, int numberOfMatches) {
+    private final AIInput player;
+    private final AIInput opponent;
+    private final GEBuild gameEngine;
+    private final int numberOfMatches;
+    private final ExecutorService executorService;
+
+    public Game(
+            AIInput player,
+            AIInput opponent,
+            GEBuild gameEngine,
+            ExecutorService executorService) {
+
+        this(player, opponent, gameEngine, DEFAULT_NUMBER_OF_MATCHES, executorService);
+    }
+
+    public Game(
+            AIInput player,
+            AIInput opponent,
+            GEBuild gameEngine,
+            int numberOfMatches,
+            ExecutorService executorService) {
+
         this.player = player;
         this.opponent = opponent;
         this.gameEngine = gameEngine;
         this.numberOfMatches = numberOfMatches;
-    }
-
-    public Game(
-            BiFunction<Map<String, Object>, IntSupplier, AI> playerCtor,
-            Map<String, Object> playerConf,
-            BiFunction<Map<String, Object>, IntSupplier, AI> opponentCtor,
-            Map<String, Object> opponentConf,
-            GameEngine gameEngine,
-            int numberOfMatches) {
-
-        this.player = playerCtor.apply(playerConf, gameEngine::playerInput);
-        this.opponent = opponentCtor.apply(opponentConf, gameEngine::opponentInput);
-        this.gameEngine = gameEngine;
-        this.numberOfMatches = numberOfMatches;
+        this.executorService = executorService;
     }
 
     @Override
     public GameResult call() throws Exception {
-        ExecutorService service = Executors.newFixedThreadPool(numberOfMatches);
-
         List<Callable<MatchResult>> matches = new ArrayList<>();
         for (int i = 0; i < numberOfMatches; i++) {
-//            matches.add(new Match(player, opponent, gameEngine));
+            matches.add(new Match(player, opponent, gameEngine));
         }
 
-        List<Future<MatchResult>> futures = service.invokeAll(matches);
+        List<Future<MatchResult>> futures = executorService.invokeAll(matches);
 
         GameResult gameResult = new GameResult();
         for (Future<MatchResult> future : futures) {
@@ -70,7 +68,7 @@ public class Game implements Callable<Game.GameResult> {
             gameResult.addMatchResult(matchResult);
         }
 
-        service.shutdown();
+        executorService.shutdown();
 
         return gameResult;
     }
