@@ -40,7 +40,7 @@ final class Contest {
             AIConf player = ais.get(i);
             for (int j = i + 1; j < ais.size(); j++) {
                 AIConf opponent = ais.get(j);
-                games.add(new Game(player.aiCtor, player.conf, opponent.aiCtor, opponent.conf, gameEngine, numberOfMatches));
+//                games.add(new Game(player.aiCtor, player.conf, opponent.aiCtor, opponent.conf, gameEngine, numberOfMatches));
             }
         }
 

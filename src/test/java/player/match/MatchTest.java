@@ -29,6 +29,7 @@ import player.engine.builder.GEBuild;
 import player.engine.builder.GEBuilder;
 import player.match.Match.MatchResult;
 
+//TODO: re-structure test suite?
 public class MatchTest implements WithAssertions {
 
     @Test

@@ -16,10 +16,10 @@ public class GameRunner {
 
         int numberOfMatches = 100;
 
-        Game game = new Game(player, opponent, gameEngine, numberOfMatches);
+//        Game game = new Game(player, opponent, gameEngine, numberOfMatches);
 
-        Game.GameResult gameResult = game.call();
+//        Game.GameResult gameResult = game.call();
 
-        System.out.println(gameResult);
+//        System.out.println(gameResult);
     }
 }

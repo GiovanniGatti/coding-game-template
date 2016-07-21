@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import com.google.common.base.MoreObjects;
@@ -36,15 +35,15 @@ public class Game implements Callable<Game.GameResult> {
             GEBuild gameEngine,
             ExecutorService executorService) {
 
-        this(player, opponent, gameEngine, DEFAULT_NUMBER_OF_MATCHES, executorService);
+        this(player, opponent, gameEngine, executorService, DEFAULT_NUMBER_OF_MATCHES);
     }
 
     public Game(
             AIInput player,
             AIInput opponent,
             GEBuild gameEngine,
-            int numberOfMatches,
-            ExecutorService executorService) {
+            ExecutorService executorService,
+            int numberOfMatches) {
 
         this.player = player;
         this.opponent = opponent;
@@ -67,8 +66,6 @@ public class Game implements Callable<Game.GameResult> {
             MatchResult matchResult = future.get();
             gameResult.addMatchResult(matchResult);
         }
-
-        executorService.shutdown();
 
         return gameResult;
     }
