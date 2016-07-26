@@ -2,9 +2,13 @@ package player.engine;
 
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Random;
 
 import org.mockito.Mockito;
+import org.mockito.stubbing.OngoingStubbing;
 
 public final class MockedGE {
 
@@ -38,9 +42,21 @@ public final class MockedGE {
                 .build();
     }
 
-    public static GameEngine anyWithRounds(int rounds) {
+    public static GameEngine anyWithNumberOfRounds(int rounds) {
         return newBuilder()
                 .withNumberOfRounds(rounds)
+                .build();
+    }
+
+    public static GameEngine anyWithPlayerInput(int... playerInput) {
+        return newBuilder()
+                .withPlayerInput(playerInput)
+                .build();
+    }
+
+    public static GameEngine anyWithOpponentInput(int... opponentInput) {
+        return newBuilder()
+                .withOpponentInput(opponentInput)
                 .build();
     }
 
@@ -52,6 +68,9 @@ public final class MockedGE {
         private int opponentScore;
         private int numberOfRounds;
 
+        private List<Integer> playerInput;
+        private List<Integer> opponentInput;
+
         private Builder() {
             this.random = new Random();
 
@@ -59,6 +78,17 @@ public final class MockedGE {
             this.playerScore = random.nextInt(100);
             this.opponentScore = random.nextInt(100);
             this.numberOfRounds = random.nextInt(100);
+
+            int inputSize = random.nextInt(4) + 1;
+            List<Integer> playerInput = new ArrayList<>();
+            List<Integer> opponentInput = new ArrayList<>();
+            for (int i = 0; i < inputSize; i++) {
+                playerInput.add(random.nextInt(100));
+                opponentInput.add(random.nextInt(100));
+            }
+
+            this.playerInput = playerInput;
+            this.opponentInput = opponentInput;
         }
 
         Builder withWinner(Winner winner) {
@@ -81,6 +111,24 @@ public final class MockedGE {
             return this;
         }
 
+        Builder withPlayerInput(int[] playerInput) {
+            List<Integer> input = new ArrayList<>();
+            for (int i : playerInput) {
+                input.add(i);
+            }
+            this.playerInput = input;
+            return this;
+        }
+
+        Builder withOpponentInput(int... opponentInput) {
+            List<Integer> input = new ArrayList<>();
+            for (int i : opponentInput) {
+                input.add(i);
+            }
+            this.opponentInput = input;
+            return this;
+        }
+
         GameEngine build() {
             GameEngine gameEngine = Mockito.mock(GameEngine.class);
 
@@ -89,9 +137,13 @@ public final class MockedGE {
             when(gameEngine.getOpponentScore()).thenReturn(opponentScore);
             when(gameEngine.getNumberOfRounds()).thenReturn(numberOfRounds);
 
-            // TODO
-            when(gameEngine.playerInput()).thenReturn(null);
-            when(gameEngine.opponentInput()).thenReturn(null);
+            Iterator<Integer> it = playerInput.iterator();
+            OngoingStubbing<Integer> playerStubbing = when(gameEngine.playerInput()).thenReturn(it.next());
+            it.forEachRemaining(playerStubbing::thenReturn);
+
+            it = opponentInput.iterator();
+            OngoingStubbing<Integer> opponentStubbing = when(gameEngine.opponentInput()).thenReturn(it.next());
+            it.forEachRemaining(opponentStubbing::thenReturn);
 
             return gameEngine;
         }
