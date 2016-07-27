@@ -1,7 +1,5 @@
 package player.game;
 
-import static org.mockito.Mockito.when;
-
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -13,10 +11,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import player.MockedAI;
-import player.Player.AI;
 import player.ai.builder.AIBuilder;
 import player.ai.builder.AIInput;
 import player.engine.GameEngine;
@@ -39,18 +35,10 @@ class GameTest implements WithAssertions {
     @Test
     @DisplayName("is a run of multiple matches")
     void play_matches() throws Exception {
-        AIInput playerAIInput = AIBuilder.newBuilder()
-                .withCtor((input) -> Mockito.mock(AI.class));
-
-        AIInput opponentIInput = AIBuilder.newBuilder()
-                .withCtor((input) -> Mockito.mock(AI.class));
-
-        GameEngine gameEngine = Mockito.mock(GameEngine.class);
-        when(gameEngine.getWinner()).thenReturn(Winner.PLAYER);
         GEBuild gameEngineBuild = GEBuilder.newBuilder()
-                .withCtor(() -> gameEngine);
+                .withCtor(MockedGE::any);
 
-        Game game = new Game(playerAIInput, opponentIInput, gameEngineBuild, service, 4);
+        Game game = new Game(anyAIInput(), anyAIInput(), gameEngineBuild, service, 4);
 
         GameResult result = game.call();
 
@@ -58,9 +46,25 @@ class GameTest implements WithAssertions {
     }
 
     @Test
-    @DisplayName("two games should independently run in parallel")
-    void two_games_should_run_in_parallel() throws Exception {
-        // TODO: what????
+    @DisplayName("winner is the player that won the most number of matches")
+    void player_win_rate() throws Exception {
+        GameEngine match1 = MockedGE.anyWithWinner(Winner.PLAYER);
+        GameEngine match2 = MockedGE.anyWithWinner(Winner.PLAYER);
+        GameEngine match3 = MockedGE.anyWithWinner(Winner.OPPONENT);
+        GameEngine match4 = MockedGE.anyWithWinner(Winner.OPPONENT);
+        GameEngine match5 = MockedGE.anyWithWinner(Winner.OPPONENT);
+
+        List<GameEngine> matches = Arrays.asList(match1, match2, match3, match4, match5);
+        Iterator<GameEngine> it = matches.iterator();
+
+        GEBuild gameEngineBuild = GEBuilder.newBuilder()
+                .withCtor(it::next);
+
+        Game game = new Game(anyAIInput(), anyAIInput(), gameEngineBuild, service, matches.size());
+
+        GameResult result = game.call();
+
+        assertThat(result.getWinner()).isEqualTo(Winner.OPPONENT);
     }
 
     @Nested
@@ -89,17 +93,76 @@ class GameTest implements WithAssertions {
 
         @Test
         @DisplayName("the right average opponent score")
-        void tmp2() {
-            GameEngine match1 = MockedGE.anyWithPlayerInput(0, 1, 2, 3);
+        void average_opponent_score() throws Exception {
+            GameEngine match1 = MockedGE.anyWithOpponentScore(15);
+            GameEngine match2 = MockedGE.anyWithOpponentScore(16);
+            GameEngine match3 = MockedGE.anyWithOpponentScore(17);
 
-            System.out.println(match1.playerInput());
-            System.out.println(match1.playerInput());
-            System.out.println(match1.playerInput());
-            System.out.println(match1.playerInput());
-            System.out.println(match1.playerInput());
-            System.out.println(match1.playerInput());
+            List<GameEngine> matches = Arrays.asList(match1, match2, match3);
+            Iterator<GameEngine> it = matches.iterator();
+
+            GEBuild gameEngineBuild = GEBuilder.newBuilder()
+                    .withCtor(it::next);
+
+            Game game = new Game(anyAIInput(), anyAIInput(), gameEngineBuild, service, matches.size());
+
+            GameResult result = game.call();
+
+            assertThat(result.getAverageOpponentScore()).isEqualTo(16);
         }
 
+        @Test
+        @DisplayName("the right average number of rounds")
+        void average_number_of_rounds() throws Exception {
+            GameEngine match1 = MockedGE.anyWithNumberOfRounds(15);
+            GameEngine match2 = MockedGE.anyWithNumberOfRounds(16);
+            GameEngine match3 = MockedGE.anyWithNumberOfRounds(17);
+
+            List<GameEngine> matches = Arrays.asList(match1, match2, match3);
+            Iterator<GameEngine> it = matches.iterator();
+
+            GEBuild gameEngineBuild = GEBuilder.newBuilder()
+                    .withCtor(it::next);
+
+            Game game = new Game(anyAIInput(), anyAIInput(), gameEngineBuild, service, matches.size());
+
+            GameResult result = game.call();
+
+            assertThat(result.getAverageNumberOfRounds()).isEqualTo(16);
+        }
+
+        @Test
+        @DisplayName("the right player win rate")
+        void player_win_rate() throws Exception {
+            GameEngine match1 = MockedGE.anyWithWinner(Winner.PLAYER);
+            GameEngine match2 = MockedGE.anyWithWinner(Winner.PLAYER);
+            GameEngine match3 = MockedGE.anyWithWinner(Winner.OPPONENT);
+
+            List<GameEngine> matches = Arrays.asList(match1, match2, match3);
+            Iterator<GameEngine> it = matches.iterator();
+
+            GEBuild gameEngineBuild = GEBuilder.newBuilder()
+                    .withCtor(it::next);
+
+            Game game = new Game(anyAIInput(), anyAIInput(), gameEngineBuild, service, matches.size());
+
+            GameResult result = game.call();
+
+            assertThat(result.getPlayerWinRate()).isEqualTo(2.0 / 3.0);
+        }
+
+        @Test
+        @DisplayName("the right number of matches")
+        void number_of_matches() throws Exception {
+            GEBuild gameEngineBuild = GEBuilder.newBuilder()
+                    .withCtor(MockedGE::any);
+
+            Game game = new Game(anyAIInput(), anyAIInput(), gameEngineBuild, service, 5);
+
+            GameResult result = game.call();
+
+            assertThat(result.getNumberOfMatches()).isEqualTo(5L);
+        }
     }
 
     private static AIInput anyAIInput() {
