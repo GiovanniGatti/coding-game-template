@@ -23,7 +23,7 @@ class ContestTest implements WithAssertions {
 
     @BeforeEach
     void init() {
-        service = Executors.newFixedThreadPool(3);
+        service = Executors.newFixedThreadPool(5);
     }
 
     @Test

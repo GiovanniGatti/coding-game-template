@@ -6,7 +6,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import com.google.common.base.MoreObjects;
@@ -51,8 +50,8 @@ public final class Contest implements Callable<Contest.ContestResult> {
 
     @Override
     public ContestResult call() throws InterruptedException {
-        // TODO: executor service cannot be shared?
-        ExecutorService s = Executors.newFixedThreadPool(3);
+        // TODO: executor service cannot be shared? Yes it can, but care on the thread pool: still a subject to study
+        // ExecutorService s = Executors.newFixedThreadPool(3);
         List<Callable<GameResult>> games = new ArrayList<>();
         for (int i = 0; i < ais.size() - 1; i++) {
             AIInput player = ais.get(i);
@@ -63,7 +62,7 @@ public final class Contest implements Callable<Contest.ContestResult> {
                                 player,
                                 opponent,
                                 gameEngine,
-                                s,
+                                executorService,
                                 numberOfMatches));
             }
         }
