@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
@@ -53,7 +54,7 @@ public class Game implements Callable<Game.GameResult> {
     }
 
     @Override
-    public GameResult call() throws Exception {
+    public GameResult call() throws InterruptedException, ExecutionException {
         List<Callable<MatchResult>> matches = new ArrayList<>();
         for (int i = 0; i < numberOfMatches; i++) {
             matches.add(new Match(player, opponent, gameEngine));
