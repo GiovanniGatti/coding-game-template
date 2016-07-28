@@ -31,7 +31,7 @@ public final class Match implements Callable<Match.MatchResult> {
     }
 
     @Override
-    public MatchResult call() throws Exception {
+    public MatchResult call() {
         gameEngine.start();
 
         do {

@@ -27,7 +27,7 @@ class MatchTest implements WithAssertions {
 
     @Test
     @DisplayName("starts up only once the provided game engine")
-    void startUpGameEngine() throws Exception {
+    void startUpGameEngine() {
         MockedGE.Builder start = MockedGE.newBuilder().withWinner(Winner.ON_GOING);
         MockedGE.Builder round1 = MockedGE.newBuilder().withWinner(Winner.PLAYER);
 
@@ -45,7 +45,7 @@ class MatchTest implements WithAssertions {
 
     @Test
     @DisplayName("is played until someone wins")
-    void playUntilWinner() throws Exception {
+    void playUntilWinner() {
         MockedGE.Builder start = MockedGE.newBuilder().withWinner(Winner.ON_GOING);
         MockedGE.Builder round1 = MockedGE.newBuilder().withWinner(Winner.ON_GOING);
         MockedGE.Builder round2 = MockedGE.newBuilder().withWinner(Winner.ON_GOING);
@@ -65,7 +65,7 @@ class MatchTest implements WithAssertions {
 
     @Test
     @DisplayName("consists of providing AI input and them playing their output actions")
-    void playAIActions() throws Exception {
+    void playAIActions() {
 
         Action playerAction = Mockito.mock(Action.class);
         AIInput playerAIInput = AIBuilder.newBuilder()
@@ -98,7 +98,7 @@ class MatchTest implements WithAssertions {
 
         @Test
         @DisplayName("the right winner")
-        void rightWinner() throws Exception {
+        void rightWinner() {
             GEBuild gameEngineBuild = GEBuilder.newBuilder()
                     .withCtor(() -> MockedGE.anyWithWinner(Winner.OPPONENT));
 
@@ -111,7 +111,7 @@ class MatchTest implements WithAssertions {
 
         @Test
         @DisplayName("the right player score")
-        void playerScore() throws Exception {
+        void playerScore() {
             GEBuild gameEngineBuild = GEBuilder.newBuilder()
                     .withCtor(() -> MockedGE.anyWithPlayerScore(17));
 
@@ -124,7 +124,7 @@ class MatchTest implements WithAssertions {
 
         @Test
         @DisplayName("the right opponent score")
-        void opponentScore() throws Exception {
+        void opponentScore() {
             GEBuild gameEngineBuild = GEBuilder.newBuilder()
                     .withCtor(() -> MockedGE.anyWithOpponentScore(17));
 
@@ -137,7 +137,7 @@ class MatchTest implements WithAssertions {
 
         @Test
         @DisplayName("the right number of rounds")
-        void numberOfRounds() throws Exception {
+        void numberOfRounds() {
             GEBuild gameEngineBuild = GEBuilder.newBuilder()
                     .withCtor(() -> MockedGE.anyWithNumberOfRounds(3));
 
@@ -150,7 +150,7 @@ class MatchTest implements WithAssertions {
 
         @Test
         @DisplayName("a readable output")
-        void readableOutput() throws Exception {
+        void readableOutput() {
             MockedGE.Builder gameEngine = MockedGE.newBuilder()
                     .withOpponentScore(3)
                     .withPlayerScore(5)
