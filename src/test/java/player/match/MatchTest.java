@@ -1,85 +1,86 @@
 package player.match;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-
 import org.assertj.core.api.WithAssertions;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
-import player.Player.AI;
+import player.MockedAI;
 import player.Player.Action;
 import player.ai.builder.AIBuilder;
 import player.ai.builder.AIInput;
 import player.engine.GameEngine;
+import player.engine.MockedGE;
+import player.engine.MultipleRoundMockedGE;
 import player.engine.Winner;
 import player.engine.builder.GEBuild;
 import player.engine.builder.GEBuilder;
 import player.match.Match.MatchResult;
 
-//TODO: re-structure test suite?
-public class MatchTest implements WithAssertions {
+@DisplayName("A match")
+class MatchTest implements WithAssertions {
 
     @Test
-    @DisplayName("Start up game engine")
-    public void start_up_game_engine() throws Exception {
-        GameEngine gameEngine = Mockito.mock(GameEngine.class);
-        when(gameEngine.getWinner()).thenReturn(Winner.PLAYER);
+    @DisplayName("starts up only once the provided game engine")
+    void startUpGameEngine() throws Exception {
+        MockedGE.Builder start = MockedGE.newBuilder().withWinner(Winner.ON_GOING);
+        MockedGE.Builder round1 = MockedGE.newBuilder().withWinner(Winner.PLAYER);
+
+        MultipleRoundMockedGE gameEngine = new MultipleRoundMockedGE(start, round1);
 
         GEBuild gameEngineSupplier = GEBuilder.newBuilder()
                 .withCtor(() -> gameEngine);
 
-        AI player = mock(AI.class);
-        AIInput playerInput = AIBuilder.newBuilder()
-                .withCtor((input) -> player);
-
-        AI opponent = mock(AI.class);
-        AIInput opponentInput = AIBuilder.newBuilder()
-                .withCtor((input) -> opponent);
-
-        Match match = new Match(playerInput, opponentInput, gameEngineSupplier);
+        Match match = new Match(anyAIInput(), anyAIInput(), gameEngineSupplier);
 
         match.call();
 
-        verify(gameEngine, times(1)).start();
+        assertThat(gameEngine.getStartCount()).isEqualTo(1);
     }
 
     @Test
-    @DisplayName("Search player and opponent AI actions and play them")
-    public void play_ai_actions() throws Exception {
-        AI player = Mockito.mock(AI.class);
+    @DisplayName("is played until someone wins")
+    void playUntilWinner() throws Exception {
+        MockedGE.Builder start = MockedGE.newBuilder().withWinner(Winner.ON_GOING);
+        MockedGE.Builder round1 = MockedGE.newBuilder().withWinner(Winner.ON_GOING);
+        MockedGE.Builder round2 = MockedGE.newBuilder().withWinner(Winner.ON_GOING);
+        MockedGE.Builder round3 = MockedGE.newBuilder().withWinner(Winner.PLAYER);
+
+        MultipleRoundMockedGE gameEngine = new MultipleRoundMockedGE(start, round1, round2, round3);
+
+        GEBuild gameEngineSupplier = GEBuilder.newBuilder()
+                .withCtor(() -> gameEngine);
+
+        Match match = new Match(anyAIInput(), anyAIInput(), gameEngineSupplier);
+
+        match.call();
+
+        assertThat(gameEngine.getRunCount()).isEqualTo(3);
+    }
+
+    @Test
+    @DisplayName("consists of providing AI input and them playing their output actions")
+    void playAIActions() throws Exception {
+
         Action playerAction = Mockito.mock(Action.class);
-        when(player.play()).thenReturn(new Action[] { playerAction });
-
         AIInput playerAIInput = AIBuilder.newBuilder()
-                .withCtor((input) -> player);
+                .withCtor((input) -> MockedAI.anyWithActions(playerAction));
 
-        AI opponent = Mockito.mock(AI.class);
         Action opponentAction = Mockito.mock(Action.class);
-        when(opponent.play()).thenReturn(new Action[] { opponentAction });
-
-        AIInput opponentIInput =
-                AIBuilder.newBuilder()
-                        .withCtor((input) -> opponent);
+        AIInput opponentAIInput = AIBuilder.newBuilder()
+                .withCtor((input) -> MockedAI.anyWithActions(opponentAction));
 
         GameEngine gameEngine = Mockito.mock(GameEngine.class);
         when(gameEngine.getWinner()).thenReturn(Winner.PLAYER);
         GEBuild gameEngineBuild = GEBuilder.newBuilder()
                 .withCtor(() -> gameEngine);
 
-        Match match = new Match(playerAIInput, opponentIInput, gameEngineBuild);
+        Match match = new Match(playerAIInput, opponentAIInput, gameEngineBuild);
 
         match.call();
 
@@ -91,196 +92,82 @@ public class MatchTest implements WithAssertions {
         assertThat(opponentAction).isEqualTo(opponentActions.getValue()[0]);
     }
 
-    @Test
-    @DisplayName("Return the right winner")
-    public void return_the_right_winner() throws Exception {
-        AI player = Mockito.mock(AI.class);
-        Action playerAction = Mockito.mock(Action.class);
-        when(player.play()).thenReturn(new Action[] { playerAction });
+    @Nested
+    @DisplayName("returns")
+    class MatchResults {
 
-        AIInput playerAIInput = AIBuilder.newBuilder()
-                .withCtor((input) -> player);
+        @Test
+        @DisplayName("the right winner")
+        void rightWinner() throws Exception {
+            GEBuild gameEngineBuild = GEBuilder.newBuilder()
+                    .withCtor(() -> MockedGE.anyWithWinner(Winner.OPPONENT));
 
-        AI opponent = Mockito.mock(AI.class);
-        Action opponentAction = Mockito.mock(Action.class);
-        when(opponent.play()).thenReturn(new Action[] { opponentAction });
+            Match match = new Match(anyAIInput(), anyAIInput(), gameEngineBuild);
 
-        AIInput opponentIInput =
-                AIBuilder.newBuilder()
-                        .withCtor((input) -> opponent);
+            MatchResult matchResult = match.call();
 
-        GameEngine gameEngine = Mockito.mock(GameEngine.class);
-        when(gameEngine.getWinner()).thenReturn(Winner.PLAYER);
-        GEBuild gameEngineBuild = GEBuilder.newBuilder()
-                .withCtor(() -> gameEngine);
+            assertThat(matchResult.getWinner()).isEqualTo(Winner.OPPONENT);
+        }
 
-        Match match = new Match(playerAIInput, opponentIInput, gameEngineBuild);
+        @Test
+        @DisplayName("the right player score")
+        void playerScore() throws Exception {
+            GEBuild gameEngineBuild = GEBuilder.newBuilder()
+                    .withCtor(() -> MockedGE.anyWithPlayerScore(17));
 
-        MatchResult matchResult = match.call();
+            Match match = new Match(anyAIInput(), anyAIInput(), gameEngineBuild);
 
-        assertThat(matchResult.getWinner()).isEqualTo(Winner.PLAYER);
-    }
+            MatchResult matchResult = match.call();
 
-    @Test
-    @DisplayName("Play until winner is found")
-    public void play_until_winner_is_found() throws Exception {
-        AI player = Mockito.mock(AI.class);
-        Action playerAction = Mockito.mock(Action.class);
-        when(player.play()).thenReturn(new Action[] { playerAction });
+            assertThat(matchResult.getPlayerScore()).isEqualTo(17);
+        }
 
-        AIInput playerAIInput = AIBuilder.newBuilder()
-                .withCtor((input) -> player);
+        @Test
+        @DisplayName("the right opponent score")
+        void opponentScore() throws Exception {
+            GEBuild gameEngineBuild = GEBuilder.newBuilder()
+                    .withCtor(() -> MockedGE.anyWithOpponentScore(17));
 
-        AI opponent = Mockito.mock(AI.class);
-        Action opponentAction = Mockito.mock(Action.class);
-        when(opponent.play()).thenReturn(new Action[] { opponentAction });
+            Match match = new Match(anyAIInput(), anyAIInput(), gameEngineBuild);
 
-        AIInput opponentIInput =
-                AIBuilder.newBuilder()
-                        .withCtor((input) -> opponent);
+            MatchResult matchResult = match.call();
 
-        GEBuild gameEngineBuild = GEBuilder.<Integer, Void> newBuilder()
-                .withCtor(RoundTrackerGE::new)
-                .withParam(2);
+            assertThat(matchResult.getOpponentScore()).isEqualTo(17);
+        }
 
-        Match match = new Match(playerAIInput, opponentIInput, gameEngineBuild);
+        @Test
+        @DisplayName("the right number of rounds")
+        void numberOfRounds() throws Exception {
+            GEBuild gameEngineBuild = GEBuilder.newBuilder()
+                    .withCtor(() -> MockedGE.anyWithNumberOfRounds(3));
 
-        MatchResult matchResult = match.call();
+            Match match = new Match(anyAIInput(), anyAIInput(), gameEngineBuild);
 
-        assertThat(matchResult.getRounds()).isEqualTo(2);
-    }
+            MatchResult matchResult = match.call();
 
-    @Test
-    @DisplayName("Assign statistics from game engine to match's result")
-    public void assign_statistics_from_game_engine_to_match_result() throws Exception {
-        AI player = Mockito.mock(AI.class);
-        Action playerAction = Mockito.mock(Action.class);
-        when(player.play()).thenReturn(new Action[] { playerAction });
+            assertThat(matchResult.getRounds()).isEqualTo(3);
+        }
 
-        AIInput playerAIInput = AIBuilder.newBuilder()
-                .withCtor((input) -> player);
+        @Test
+        @DisplayName("a readable output")
+        void readableOutput() throws Exception {
+            MockedGE.Builder gameEngine = MockedGE.newBuilder()
+                    .withOpponentScore(3)
+                    .withPlayerScore(5)
+                    .withNumberOfRounds(7)
+                    .withWinner(Winner.PLAYER);
 
-        AI opponent = Mockito.mock(AI.class);
-        Action opponentAction = Mockito.mock(Action.class);
-        when(opponent.play()).thenReturn(new Action[] { opponentAction });
+            Match match = new Match(anyAIInput(), anyAIInput(), gameEngine::build);
 
-        AIInput opponentIInput =
-                AIBuilder.newBuilder()
-                        .withCtor((input) -> opponent);
+            MatchResult matchResult = match.call();
 
-        GameEngine gameEngine = Mockito.mock(GameEngine.class);
-        when(gameEngine.getWinner()).thenReturn(Winner.OPPONENT);
-        when(gameEngine.getPlayerScore()).thenReturn(5);
-        when(gameEngine.getOpponentScore()).thenReturn(10);
-        when(gameEngine.getNumberOfRounds()).thenReturn(7);
-
-        GEBuild gameEngineBuild = GEBuilder.newBuilder()
-                .withCtor(() -> gameEngine);
-
-        Match match = new Match(playerAIInput, opponentIInput, gameEngineBuild);
-
-        MatchResult matchResult = match.call();
-
-        assertThat(matchResult.getWinner()).isEqualTo(Winner.OPPONENT);
-        assertThat(matchResult.getPlayerScore()).isEqualTo(5);
-        assertThat(matchResult.getOpponentScore()).isEqualTo(10);
-        assertThat(matchResult.getRounds()).isEqualTo(7);
-    }
-
-    @Test
-    @DisplayName("Supports multithreading")
-    public void should_support_multithreading() throws Exception {
-        AI player = Mockito.mock(AI.class);
-        Action playerAction = Mockito.mock(Action.class);
-        when(player.play()).thenReturn(new Action[] { playerAction });
-
-        AIInput playerAIInput = AIBuilder.newBuilder()
-                .withCtor((input) -> player);
-
-        AI opponent = Mockito.mock(AI.class);
-        Action opponentAction = Mockito.mock(Action.class);
-        when(opponent.play()).thenReturn(new Action[] { opponentAction });
-
-        AIInput opponentIInput =
-                AIBuilder.newBuilder()
-                        .withCtor((input) -> opponent);
-
-        GEBuild gameEngineBuild = GEBuilder.<Integer, Void> newBuilder()
-                .withCtor(RoundTrackerGE::new)
-                .withParam(10);
-
-        Match match1 = new Match(playerAIInput, opponentIInput, gameEngineBuild);
-        Match match2 = new Match(playerAIInput, opponentIInput, gameEngineBuild);
-
-        ExecutorService service = Executors.newFixedThreadPool(2);
-        List<Callable<MatchResult>> matches = Arrays.asList(match1, match2);
-        List<Future<MatchResult>> futures = service.invokeAll(matches);
-
-        assertThat(futures)
-                .extracting(MatchTest::unsafeFutureExtractor)
-                .extracting(MatchResult::getRounds)
-                .containsOnly(10);
-    }
-
-    private static <T> T unsafeFutureExtractor(Future<T> future) {
-        try {
-            return future.get();
-        } catch (InterruptedException | ExecutionException e) {
-            throw new IllegalStateException(e);
+            assertThat("MatchResult{playerScore=5, opponentScore=3, rounds=7, winner=PLAYER}")
+                    .isEqualTo(matchResult.toString());
         }
     }
 
-    private static class RoundTrackerGE implements GameEngine {
-        int rounds;
-        int numberOfRounds;
-
-        RoundTrackerGE(int numberOfRounds) {
-            rounds = 0;
-            this.numberOfRounds = numberOfRounds;
-        }
-
-        @Override
-        public void start() {
-
-        }
-
-        @Override
-        public void run(Action[] playerActions, Action[] opponentActions) {
-            rounds++;
-        }
-
-        @Override
-        public Winner getWinner() {
-            if (rounds < numberOfRounds) {
-                return Winner.ON_GOING;
-            }
-            return Winner.PLAYER;
-        }
-
-        @Override
-        public int playerInput() {
-            return 0;
-        }
-
-        @Override
-        public int opponentInput() {
-            return 0;
-        }
-
-        @Override
-        public int getPlayerScore() {
-            return 0;
-        }
-
-        @Override
-        public int getOpponentScore() {
-            return 0;
-        }
-
-        @Override
-        public int getNumberOfRounds() {
-            return rounds;
-        }
+    private static AIInput anyAIInput() {
+        return AIBuilder.newBuilder()
+                .withCtor((input) -> MockedAI.any());
     }
-
 }

@@ -16,7 +16,7 @@ public final class MockedGE {
         // Utility class
     }
 
-    private static Builder newBuilder() {
+    public static Builder newBuilder() {
         return new Builder();
     }
 
@@ -91,27 +91,27 @@ public final class MockedGE {
             this.opponentInput = opponentInput;
         }
 
-        Builder withWinner(Winner winner) {
+        public Builder withWinner(Winner winner) {
             this.winner = winner;
             return this;
         }
 
-        Builder withPlayerScore(int playerScore) {
+        public Builder withPlayerScore(int playerScore) {
             this.playerScore = playerScore;
             return this;
         }
 
-        Builder withOpponentScore(int opponentScore) {
+        public Builder withOpponentScore(int opponentScore) {
             this.opponentScore = opponentScore;
             return this;
         }
 
-        Builder withNumberOfRounds(int numberOfRounds) {
+        public Builder withNumberOfRounds(int numberOfRounds) {
             this.numberOfRounds = numberOfRounds;
             return this;
         }
 
-        Builder withPlayerInput(int[] playerInput) {
+        public Builder withPlayerInput(int[] playerInput) {
             List<Integer> input = new ArrayList<>();
             for (int i : playerInput) {
                 input.add(i);
@@ -120,7 +120,7 @@ public final class MockedGE {
             return this;
         }
 
-        Builder withOpponentInput(int... opponentInput) {
+        public Builder withOpponentInput(int... opponentInput) {
             List<Integer> input = new ArrayList<>();
             for (int i : opponentInput) {
                 input.add(i);
@@ -129,7 +129,7 @@ public final class MockedGE {
             return this;
         }
 
-        GameEngine build() {
+        public GameEngine build() {
             GameEngine gameEngine = Mockito.mock(GameEngine.class);
 
             when(gameEngine.getWinner()).thenReturn(winner);

@@ -11,8 +11,10 @@ public class MultipleRoundMockedGE implements GameEngine {
 
     private final Iterator<GameEngine> rounds;
     private GameEngine currentState;
+    private int startCount;
+    private int runCount;
 
-    public MultipleRoundMockedGE(Builder... rounds) {
+    public MultipleRoundMockedGE(Builder startState, Builder... rounds) {
         List<GameEngine> r = new ArrayList<>();
 
         for (Builder round : rounds) {
@@ -20,16 +22,19 @@ public class MultipleRoundMockedGE implements GameEngine {
         }
 
         this.rounds = r.iterator();
-        this.currentState = this.rounds.next();
+        this.currentState = startState.build();
+        this.startCount = 0;
+        this.runCount = 0;
     }
 
     @Override
     public void start() {
-        // ILB
+        startCount++;
     }
 
     @Override
     public void run(Player.Action[] playerActions, Player.Action[] opponentActions) {
+        runCount++;
         currentState = rounds.next();
     }
 
@@ -61,5 +66,13 @@ public class MultipleRoundMockedGE implements GameEngine {
     @Override
     public int getNumberOfRounds() {
         return currentState.getNumberOfRounds();
+    }
+
+    public int getStartCount() {
+        return startCount;
+    }
+
+    public int getRunCount() {
+        return runCount;
     }
 }
