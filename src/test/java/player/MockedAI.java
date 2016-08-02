@@ -1,8 +1,11 @@
 package player;
 
-import static org.mockito.Mockito.when;
+import java.util.Collections;
+import java.util.Objects;
 
 import org.mockito.Mockito;
+
+import com.google.common.base.MoreObjects;
 
 import player.Player.AI;
 import player.Player.Action;
@@ -41,11 +44,39 @@ public final class MockedAI {
         }
 
         AI build() {
-            AI ai = Mockito.mock(AI.class);
+            return new MockedArtificialIntelligence(actions);
+        }
+    }
 
-            when(ai.play()).thenReturn(actions);
+    private static class MockedArtificialIntelligence extends AI {
 
-            return ai;
+        private final Action[] actions;
+
+        private MockedArtificialIntelligence(Action[] actions) {
+            super(Collections.emptyMap(), () -> 0);
+            this.actions = actions;
+        }
+
+        @Override
+        public Action[] play() {
+            return actions;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            return this == o || !(o == null || getClass() != o.getClass());
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(actions, this.getClass().getSimpleName());
+        }
+
+        @Override
+        public String toString() {
+            return MoreObjects.toStringHelper(this)
+                    .add("actions", actions)
+                    .toString();
         }
     }
 }

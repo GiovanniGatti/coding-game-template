@@ -19,11 +19,13 @@ import player.engine.Winner;
 @DisplayName("A contest")
 class ContestTest implements WithAssertions {
 
-    private ExecutorService service;
+    private ExecutorService gameExecutorService;
+    private ExecutorService matchExecutorService;
 
     @BeforeEach
     void init() {
-        service = Executors.newFixedThreadPool(5);
+        gameExecutorService = Executors.newFixedThreadPool(2);
+        matchExecutorService = Executors.newFixedThreadPool(3);
     }
 
     @Test
@@ -32,7 +34,11 @@ class ContestTest implements WithAssertions {
 
         List<AIInput> ais = Arrays.asList((t) -> MockedAI::any, (t) -> MockedAI::any, (t) -> MockedAI::any);
 
-        Contest contest = new Contest(ais, () -> MockedGE.anyWithWinner(Winner.PLAYER), service);
+        Contest contest = new Contest(
+                ais,
+                () -> MockedGE.anyWithWinner(Winner.PLAYER),
+                gameExecutorService,
+                matchExecutorService);
 
         ContestResult contestResult = contest.call();
 

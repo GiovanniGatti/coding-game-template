@@ -60,6 +60,12 @@ class GameTest implements WithAssertions {
         assertThat(result.getWinner()).isEqualTo(Winner.OPPONENT);
     }
 
+    @Test
+    @DisplayName("TODO")
+    void check_that_ais_and_game_engines_are_always_the_same() {
+        throw new UnsupportedOperationException("TODO");
+    }
+
     @Nested
     @DisplayName("that finished, returns a result with")
     class Statisticts {
@@ -156,14 +162,21 @@ class GameTest implements WithAssertions {
             GameResult result = game.call();
 
             assertThat(
-                    "GameResult{" +
-                            "averagePlayerScore=5.0, " +
-                            "averageOpponentScore=3.0, " +
-                            "averageNumberOfRounds=7.0, " +
-                            "playerWinRate=1.0, " +
-                            "numberOfMatches=1, " +
-                            "winner=PLAYER, " +
-                            "matchResults=[MatchResult{playerScore=5, opponentScore=3, rounds=7, winner=PLAYER}]}")
+                    "GameResult{averagePlayerScore=5.0, "
+                            +
+                            "averageOpponentScore=3.0, "
+                            +
+                            "averageNumberOfRounds=7.0, "
+                            +
+                            "playerWinRate=1.0, "
+                            +
+                            "numberOfMatches=1, "
+                            +
+                            "winner=PLAYER, "
+                            +
+                            "matchResults=["
+                            +
+                            "MatchResult{player=MockedArtificialIntelligence{ai=MockedArtificialIntelligence, actions=[Mock for Action, hashCode: 1292040526]}, opponent=MockedArtificialIntelligence{ai=MockedArtificialIntelligence, actions=[Mock for Action, hashCode: 1973233403]}, gameEngine=MockedGameEngine{gameEngine=MockedGameEngine, winner=PLAYER, playerScore=5, opponentScore=3, numberOfRounds=7, playerInput=[16, 5, 95], opponentInput=[51, 78, 92], playerInputIt=java.util.ArrayList$Itr@3c73951, opponentInputIt=java.util.ArrayList$Itr@3d5c822d}, playerScore=5, opponentScore=3, rounds=7, winner=PLAYER}]}")
                     .isEqualTo(result.toString());
 
         }

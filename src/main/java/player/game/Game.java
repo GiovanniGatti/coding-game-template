@@ -9,8 +9,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Preconditions;
 
+import player.Player.AI;
 import player.ai.builder.AIInput;
+import player.engine.GameEngine;
 import player.engine.Winner;
 import player.engine.builder.GEBuild;
 import player.match.Match;
@@ -62,9 +65,31 @@ public class Game implements Callable<Game.GameResult> {
 
         List<Future<MatchResult>> futures = executorService.invokeAll(matches);
 
+        AI lastPlayer = null;
+        AI lastOpponent = null;
+        GameEngine lastGameEngine = null;
+
         GameResult gameResult = new GameResult();
         for (Future<MatchResult> future : futures) {
             MatchResult matchResult = future.get();
+            AI player = matchResult.getPlayer();
+            AI opponent = matchResult.getOpponent();
+            GameEngine gameEngine = matchResult.getGameEngine();
+
+            Preconditions.checkState(lastPlayer == null || lastPlayer.equals(player),
+                    "Illegal usage, players should always be the same, but found lastPlayer=%s, player=%s",
+                    lastPlayer, player);
+            Preconditions.checkState(lastOpponent == null || lastOpponent.equals(opponent),
+                    "Illegal usage, players should always be the same, but found lastOpponent=%s, opponent=%s",
+                    lastOpponent, opponent);
+            Preconditions.checkState(lastGameEngine == null || lastGameEngine.equals(gameEngine),
+                    "Illegal usage, players should always be the same, but found lastOpponent=%s, opponent=%s",
+                    lastOpponent, opponent);
+
+            lastPlayer = player;
+            lastOpponent = opponent;
+            lastGameEngine = gameEngine;
+
             gameResult.addMatchResult(matchResult);
         }
 

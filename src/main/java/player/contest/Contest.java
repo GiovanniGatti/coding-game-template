@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
@@ -12,6 +13,7 @@ import com.google.common.base.MoreObjects;
 
 import player.Player.AI;
 import player.ai.builder.AIInput;
+import player.engine.Winner;
 import player.engine.builder.GEBuild;
 import player.game.Game;
 import player.game.Game.GameResult;
@@ -25,33 +27,35 @@ public final class Contest implements Callable<Contest.ContestResult> {
 
     private final List<AIInput> ais;
     private final GEBuild gameEngine;
-    private final ExecutorService executorService;
+    private final ExecutorService gameExecutorService;
+    private final ExecutorService matchExecutorService;
     private final int numberOfMatches;
 
     public Contest(
             List<AIInput> ais,
             GEBuild gameEngine,
-            ExecutorService executorService) {
+            ExecutorService gameExecutorService,
+            ExecutorService matchExecutorService) {
 
-        this(ais, gameEngine, executorService, DEFAULT_NUMBER_OF_MATCHES);
+        this(ais, gameEngine, gameExecutorService, matchExecutorService, DEFAULT_NUMBER_OF_MATCHES);
     }
 
     public Contest(
             List<AIInput> ais,
             GEBuild gameEngine,
-            ExecutorService executorService,
+            ExecutorService gameExecutorService,
+            ExecutorService matchExecutorService,
             int numberOfMatches) {
 
         this.ais = ais;
         this.gameEngine = gameEngine;
-        this.executorService = executorService;
+        this.gameExecutorService = gameExecutorService;
+        this.matchExecutorService = matchExecutorService;
         this.numberOfMatches = numberOfMatches;
     }
 
     @Override
-    public ContestResult call() throws InterruptedException {
-        // TODO: executor service cannot be shared? Yes it can, but care on the thread pool: still a subject to study
-        // ExecutorService s = Executors.newFixedThreadPool(3);
+    public ContestResult call() throws InterruptedException, ExecutionException {
         List<Callable<GameResult>> games = new ArrayList<>();
         for (int i = 0; i < ais.size() - 1; i++) {
             AIInput player = ais.get(i);
@@ -62,37 +66,36 @@ public final class Contest implements Callable<Contest.ContestResult> {
                                 player,
                                 opponent,
                                 gameEngine,
-                                executorService,
+                                matchExecutorService,
                                 numberOfMatches));
             }
         }
 
-        List<Future<GameResult>> futures = executorService.invokeAll(games);
+        List<Future<GameResult>> futures = gameExecutorService.invokeAll(games);
 
         int[] scores = new int[ais.size()];
-        // int offset = 0;
-        // for (int i = 0; i < ais.size() - 1; i++) {
-        // AI player = ais.get(i);
-        //
-        // int k = 0;
-        //
-        // for (int j = i + 1; j < ais.size(); j++) {
-        // AI opponent = ais.get(j);
-        // Future<GameResult> future = futures.get(offset + k);
-        //
-        // GameResult result = future.get();
-        //
-        // if (result.getWinner().equals(Winner.PLAYER)) {
-        // scores[i]++;
-        // } else {
-        // scores[j]++;
-        // }
-        //
-        // k++;
-        // }
-        //
-        // offset += ais.size() - (i + 1);
-        // }
+        int offset = 0;
+        for (int i = 0; i < ais.size() - 1; i++) {
+            int k = 0;
+
+            for (int j = i + 1; j < ais.size(); j++) {
+                Future<GameResult> future = futures.get(offset + k);
+                GameResult result = future.get();
+
+                AI opponent = result.getMatchResults().get(0).getOpponent();
+                AI player = result.getMatchResults().get(0).getPlayer();
+
+                if (result.getWinner().equals(Winner.PLAYER)) {
+                    scores[i]++;
+                } else {
+                    scores[j]++;
+                }
+
+                k++;
+            }
+
+            offset += ais.size() - (i + 1);
+        }
 
         return new ContestResult(null, scores);
     }
