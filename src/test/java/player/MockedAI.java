@@ -69,7 +69,7 @@ public final class MockedAI {
 
         @Override
         public int hashCode() {
-            return Objects.hash(actions, this.getClass().getSimpleName());
+            return Objects.hash(getClass());
         }
 
         @Override

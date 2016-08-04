@@ -214,16 +214,7 @@ public final class MockedGE {
 
         @Override
         public int hashCode() {
-            return Objects.hash(
-                    winner,
-                    playerScore,
-                    opponentScore,
-                    numberOfRounds,
-                    playerInput,
-                    opponentInput,
-                    playerInputIt,
-                    opponentInputIt,
-                    this.getClass().getSimpleName());
+            return Objects.hash(getClass());
         }
 
         @Override

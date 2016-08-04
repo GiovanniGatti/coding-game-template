@@ -42,6 +42,7 @@ public final class Contest implements Callable<Contest.ContestResult> {
 
     public Contest(
             List<AIInput> ais,
+            // TODO: make it a list
             GEBuild gameEngine,
             ExecutorService gameExecutorService,
             ExecutorService matchExecutorService,
@@ -56,6 +57,7 @@ public final class Contest implements Callable<Contest.ContestResult> {
 
     @Override
     public ContestResult call() throws InterruptedException, ExecutionException {
+        // TODO: wrapper class for indexing
         List<Callable<GameResult>> games = new ArrayList<>();
         for (int i = 0; i < ais.size() - 1; i++) {
             AIInput player = ais.get(i);

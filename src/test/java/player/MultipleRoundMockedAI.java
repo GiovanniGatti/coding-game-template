@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 
 import player.MockedAI.Builder;
 
@@ -27,5 +28,15 @@ public class MultipleRoundMockedAI extends AI {
     @Override
     public Action[] play() {
         return rounds.next().play();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return this == o || !(o == null || getClass() != o.getClass());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getClass());
     }
 }

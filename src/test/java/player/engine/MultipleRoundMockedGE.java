@@ -3,6 +3,7 @@ package player.engine;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 
 import player.Player;
 import player.engine.MockedGE.Builder;
@@ -74,5 +75,15 @@ public class MultipleRoundMockedGE implements GameEngine {
 
     public int getRunCount() {
         return runCount;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return this == o || !(o == null || getClass() != o.getClass());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getClass());
     }
 }

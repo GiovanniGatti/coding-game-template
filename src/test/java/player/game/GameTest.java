@@ -61,8 +61,20 @@ class GameTest implements WithAssertions {
     }
 
     @Test
-    @DisplayName("TODO")
-    void check_that_ais_and_game_engines_are_always_the_same() {
+    @DisplayName("requires that all supplied player AIs are the same")
+    void throwIllegalArgumentExceptionIfOneOfSuppliedPlayerAIsIsDifferentFromTheOthers() {
+        throw new UnsupportedOperationException("TODO");
+    }
+
+    @Test
+    @DisplayName("requires that all supplied opponent AIs are the same")
+    void throwIllegalArgumentExceptionIfOneOfSuppliedOpponentAIsIsDifferentFromTheOthers() {
+        throw new UnsupportedOperationException("TODO");
+    }
+
+    @Test
+    @DisplayName("requires that all supplied game engines are the same")
+    void throwIllegalArgumentExceptionIfOneOfSuppliedGameEnginesIsDifferentFromTheOthers() {
         throw new UnsupportedOperationException("TODO");
     }
 
