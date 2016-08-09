@@ -8,6 +8,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 
 import com.google.common.base.MoreObjects;
 
@@ -17,6 +18,7 @@ import player.engine.Winner;
 import player.engine.builder.GEBuild;
 import player.game.Game;
 import player.game.Game.GameResult;
+import player.match.Match;
 
 /**
  * Play any number of AIs against each other and then check its performances
@@ -56,7 +58,7 @@ public final class Contest implements Callable<Contest.ContestResult> {
 
     @Override
     public ContestResult call() throws InterruptedException, ExecutionException {
-        // TODO: wrapper class for indexing
+
         List<Callable<GameResult>> games = new ArrayList<>();
         for (int i = 0; i < ais.size() - 1; i++) {
             AIInput player = ais.get(i);
@@ -76,8 +78,13 @@ public final class Contest implements Callable<Contest.ContestResult> {
 
         List<Future<GameResult>> futures = gameExecutorService.invokeAll(games);
 
-        int[] scores = new int[ais.size()];
+        List<Score> scores = new ArrayList<>();
+        for (int i = 0; i < futures.size(); i++) {
+            scores.add(new Score());
+        }
+
         int offset = 0;
+
         for (int i = 0; i < ais.size() - 1; i++) {
             int k = 0;
 
@@ -85,13 +92,23 @@ public final class Contest implements Callable<Contest.ContestResult> {
                 Future<GameResult> future = futures.get(offset + k);
                 GameResult result = future.get();
 
-                AI opponent = result.getMatchResults().get(0).getOpponent();
-                AI player = result.getMatchResults().get(0).getPlayer();
+                List<AI> opponents = result.getMatchResults().stream()
+                        .map(Match.MatchResult::getOpponent)
+                        .collect(Collectors.toList());
+
+                List<AI> players = result.getMatchResults().stream()
+                        .map(Match.MatchResult::getPlayer)
+                        .collect(Collectors.toList());
+
+                // TODO: this may not be useful.
+                // TODO: should we force equals/hashcode on the conf?
+                scores.get(i).addAIs(players);
+                scores.get(j).addAIs(opponents);
 
                 if (result.getWinner().equals(Winner.PLAYER)) {
-                    scores[i]++;
+                    scores.get(i).incrementScore();
                 } else {
-                    scores[j]++;
+                    scores.get(j).incrementScore();
                 }
 
                 k++;
@@ -100,17 +117,18 @@ public final class Contest implements Callable<Contest.ContestResult> {
             offset += ais.size() - (i + 1);
         }
 
-        return new ContestResult(null, scores);
+        return new ContestResult(scores);
     }
 
     public static class ContestResult {
 
         private final List<Classification> classifications;
 
-        ContestResult(List<AI> ais, int[] scores) {
+        ContestResult(List<Score> scores) {
             this.classifications = new ArrayList<>();
-            for (int i = 0; i < ais.size(); i++) {
-                this.classifications.add(new Classification(ais.get(i), scores[i], ais.size() - 1));
+            for (int i = 0; i < scores.size(); i++) {
+                Score score = scores.get(i);
+                this.classifications.add(new Classification(score.getAis(), score.getScore(), scores.size() - 1));
             }
 
             Collections.sort(classifications);
@@ -132,14 +150,15 @@ public final class Contest implements Callable<Contest.ContestResult> {
 
     public static class Classification implements Comparable<Classification> {
 
-        static final Comparator<Classification> SCORE_COMPARATOR = Comparator.comparing(Classification::getScore);
+        static final Comparator<Classification> SCORE_COMPARATOR =
+                Comparator.comparing(Classification::getScore).reversed();
 
-        private final AI ai;
+        private final List<AI> ais;
         private final int score;
         private final double winRate;
 
-        Classification(AI ai, int score, int numberOfMatches) {
-            this.ai = ai;
+        Classification(List<AI> ais, int score, int numberOfMatches) {
+            this.ais = ais;
             this.score = score;
             this.winRate = ((double) score) / numberOfMatches;
         }
@@ -148,8 +167,8 @@ public final class Contest implements Callable<Contest.ContestResult> {
             return score;
         }
 
-        AI getAi() {
-            return ai;
+        List<AI> getAi() {
+            return ais;
         }
 
         double getWinRate() {
@@ -161,14 +180,46 @@ public final class Contest implements Callable<Contest.ContestResult> {
             return SCORE_COMPARATOR.compare(this, o);
         }
 
+        // TODO: how to properly do this?
         @Override
         public String toString() {
             return MoreObjects.toStringHelper(this)
-                    .add("ai", ai.getClass().getSimpleName())
-                    .add("conf", ai.getConf())
+                    .add("ai", ais.get(0).getClass().getSimpleName())
+                    .add("conf", ais.get(0).getConf())
+                    .add("ais", ais)
                     .add("winRate", winRate)
                     .add("score", score)
                     .toString();
+        }
+    }
+
+    static class Score {
+        private int score;
+        private List<AI> ais;
+
+        Score() {
+            this.score = 0;
+            this.ais = new ArrayList<>();
+        }
+
+        void incrementScore() {
+            score++;
+        }
+
+        int getScore() {
+            return score;
+        }
+
+        void addAIs(List<AI> ais) {
+            this.ais.addAll(ais);
+        }
+
+        void addAI(AI ai) {
+            ais.add(ai);
+        }
+
+        List<AI> getAis() {
+            return Collections.unmodifiableList(ais);
         }
     }
 }
