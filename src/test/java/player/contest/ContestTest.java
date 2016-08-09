@@ -1,6 +1,7 @@
 package player.contest;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -15,6 +16,7 @@ import player.ai.builder.AIInput;
 import player.contest.Contest.ContestResult;
 import player.engine.MockedGE;
 import player.engine.Winner;
+import player.engine.builder.GEBuild;
 
 @DisplayName("A contest")
 class ContestTest implements WithAssertions {
@@ -33,10 +35,11 @@ class ContestTest implements WithAssertions {
     void tmp() throws Exception {
 
         List<AIInput> ais = Arrays.asList((t) -> MockedAI::any, (t) -> MockedAI::any, (t) -> MockedAI::any);
+        List<GEBuild> gameEngines = Collections.singletonList(() -> MockedGE.anyWithWinner(Winner.PLAYER));
 
         Contest contest = new Contest(
                 ais,
-                () -> MockedGE.anyWithWinner(Winner.PLAYER),
+                gameEngines,
                 gameExecutorService,
                 matchExecutorService);
 

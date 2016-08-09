@@ -26,30 +26,29 @@ public final class Contest implements Callable<Contest.ContestResult> {
     private static final int DEFAULT_NUMBER_OF_MATCHES = 5;
 
     private final List<AIInput> ais;
-    private final GEBuild gameEngine;
+    private final List<GEBuild> gameEngines;
     private final ExecutorService gameExecutorService;
     private final ExecutorService matchExecutorService;
     private final int numberOfMatches;
 
     public Contest(
             List<AIInput> ais,
-            GEBuild gameEngine,
+            List<GEBuild> gameEngines,
             ExecutorService gameExecutorService,
             ExecutorService matchExecutorService) {
 
-        this(ais, gameEngine, gameExecutorService, matchExecutorService, DEFAULT_NUMBER_OF_MATCHES);
+        this(ais, gameEngines, gameExecutorService, matchExecutorService, DEFAULT_NUMBER_OF_MATCHES);
     }
 
     public Contest(
             List<AIInput> ais,
-            // TODO: make it a list
-            GEBuild gameEngine,
+            List<GEBuild> gameEngines,
             ExecutorService gameExecutorService,
             ExecutorService matchExecutorService,
             int numberOfMatches) {
 
         this.ais = ais;
-        this.gameEngine = gameEngine;
+        this.gameEngines = gameEngines;
         this.gameExecutorService = gameExecutorService;
         this.matchExecutorService = matchExecutorService;
         this.numberOfMatches = numberOfMatches;
@@ -63,13 +62,15 @@ public final class Contest implements Callable<Contest.ContestResult> {
             AIInput player = ais.get(i);
             for (int j = i + 1; j < ais.size(); j++) {
                 AIInput opponent = ais.get(j);
-                games.add(
-                        new Game(
-                                player,
-                                opponent,
-                                gameEngine,
-                                matchExecutorService,
-                                numberOfMatches));
+                for (GEBuild gameEngine : gameEngines) {
+                    games.add(
+                            new Game(
+                                    player,
+                                    opponent,
+                                    gameEngine,
+                                    matchExecutorService,
+                                    numberOfMatches));
+                }
             }
         }
 
