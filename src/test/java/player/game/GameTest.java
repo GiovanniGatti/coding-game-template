@@ -233,17 +233,6 @@ class GameTest implements WithAssertions {
         public Action[] play() {
             return new Action[0];
         }
-
-        @Override
-        public boolean equals(Object o) {
-            return this == o || !(o == null || getClass() != o.getClass());
-
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(getClass());
-        }
     }
 
     private static class AnotherGE implements GameEngine {

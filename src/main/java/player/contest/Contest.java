@@ -100,8 +100,6 @@ public final class Contest implements Callable<Contest.ContestResult> {
                         .map(Match.MatchResult::getPlayer)
                         .collect(Collectors.toList());
 
-                // TODO: this may not be useful.
-                // TODO: should we force equals/hashcode on the conf?
                 scores.get(i).addAIs(players);
                 scores.get(j).addAIs(opponents);
 
@@ -180,20 +178,19 @@ public final class Contest implements Callable<Contest.ContestResult> {
             return SCORE_COMPARATOR.compare(this, o);
         }
 
-        // TODO: how to properly do this?
         @Override
         public String toString() {
             return MoreObjects.toStringHelper(this)
+                    // all ais are the same, so any of them is sufficient
                     .add("ai", ais.get(0).getClass().getSimpleName())
                     .add("conf", ais.get(0).getConf())
-                    .add("ais", ais)
                     .add("winRate", winRate)
                     .add("score", score)
                     .toString();
         }
     }
 
-    static class Score {
+    private static class Score {
         private int score;
         private List<AI> ais;
 

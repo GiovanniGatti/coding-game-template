@@ -1,7 +1,6 @@
 package player;
 
 import java.util.Collections;
-import java.util.Objects;
 
 import org.mockito.Mockito;
 
@@ -60,16 +59,6 @@ public final class MockedAI {
         @Override
         public Action[] play() {
             return actions;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            return this == o || !(o == null || getClass() != o.getClass());
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(getClass());
         }
 
         @Override

@@ -78,7 +78,7 @@ public final class Player {
 
         @Override
         public final int hashCode() {
-            return Objects.hash(conf);
+            return Objects.hash(conf, getClass());
         }
     }
 }
