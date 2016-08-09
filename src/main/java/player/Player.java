@@ -2,6 +2,7 @@ package player;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.IntSupplier;
 
 public final class Player {
@@ -10,6 +11,20 @@ public final class Player {
         // TODO: implement me!
         AI ai = null;
 
+    }
+
+    /**
+     * Represents an action that can be taken
+     */
+    public static class Action {
+
+        public Action() {
+            // TODO: implement what action is
+        }
+
+        public String asString() {
+            return "";
+        }
     }
 
     public static abstract class AI {
@@ -47,19 +62,23 @@ public final class Player {
         protected int readInput() {
             return inputSupplier.getAsInt();
         }
-    }
 
-    /**
-     * Represents an action that can be taken
-     */
-    public static class Action {
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
 
-        public Action() {
-            // TODO: implement what action is
+            AI ai = (AI) o;
+            return Objects.equals(conf, ai.conf);
         }
 
-        public String asString() {
-            return "";
+        @Override
+        public int hashCode() {
+            return Objects.hash(conf);
         }
     }
 }
