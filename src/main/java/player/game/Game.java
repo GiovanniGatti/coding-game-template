@@ -76,15 +76,21 @@ public class Game implements Callable<Game.GameResult> {
             AI opponent = matchResult.getOpponent();
             GameEngine gameEngine = matchResult.getGameEngine();
 
-            Preconditions.checkArgument(lastPlayer == null || lastPlayer.equals(player),
+            Preconditions.checkArgument(
+                    lastPlayer == null || lastPlayer.equals(player),
                     "Illegal usage, players should always be the same, but found lastPlayer=%s, player=%s",
                     lastPlayer, player);
-            Preconditions.checkArgument(lastOpponent == null || lastOpponent.equals(opponent),
-                    "Illegal usage, players should always be the same, but found lastOpponent=%s, opponent=%s",
+
+            Preconditions.checkArgument(
+                    lastOpponent == null || lastOpponent.equals(opponent),
+                    "Illegal usage, opponents should always be the same, but found lastOpponent=%s, opponent=%s",
                     lastOpponent, opponent);
-            Preconditions.checkArgument(lastGameEngine == null || lastGameEngine.equals(gameEngine),
-                    "Illegal usage, players should always be the same, but found lastOpponent=%s, opponent=%s",
-                    lastOpponent, opponent);
+
+            Preconditions.checkArgument(
+                    lastGameEngine == null || lastGameEngine.equals(gameEngine),
+                    "Illegal usage, game engines should always be the same, " +
+                            "but found lastGameEngine=%s, gameEngine=%s",
+                    lastGameEngine, gameEngine);
 
             lastPlayer = player;
             lastOpponent = opponent;

@@ -209,7 +209,6 @@ public final class MockedGE {
         @Override
         public boolean equals(Object o) {
             return this == o || !(o == null || getClass() != o.getClass());
-
         }
 
         @Override

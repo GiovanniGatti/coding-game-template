@@ -3,6 +3,7 @@ package player.game;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -13,6 +14,8 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import player.MockedAI;
+import player.Player.AI;
+import player.Player.Action;
 import player.ai.builder.AIBuilder;
 import player.ai.builder.AIInput;
 import player.engine.GameEngine;
@@ -63,19 +66,49 @@ class GameTest implements WithAssertions {
     @Test
     @DisplayName("requires that all supplied player AIs are the same")
     void throwIllegalArgumentExceptionIfOneOfSuppliedPlayerAIsIsDifferentFromTheOthers() {
-        throw new UnsupportedOperationException("TODO");
+        AI playerRound1 = MockedAI.any();
+        AI playerRound2 = new AnotherAI();
+
+        List<AI> player = Arrays.asList(playerRound1, playerRound2);
+        Iterator<AI> it = player.iterator();
+
+        Game game = new Game((inputStream) -> it::next, anyAIInput(), MockedGE::any, service, player.size());
+
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(game::call)
+                .withMessageContaining("Illegal usage, players should always be the same");
     }
 
     @Test
     @DisplayName("requires that all supplied opponent AIs are the same")
     void throwIllegalArgumentExceptionIfOneOfSuppliedOpponentAIsIsDifferentFromTheOthers() {
-        throw new UnsupportedOperationException("TODO");
+        AI opponentRound1 = MockedAI.any();
+        AI opponentRound2 = new AnotherAI();
+
+        List<AI> opponent = Arrays.asList(opponentRound1, opponentRound2);
+        Iterator<AI> it = opponent.iterator();
+
+        Game game = new Game(anyAIInput(), (inputStream) -> it::next, MockedGE::any, service, opponent.size());
+
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(game::call)
+                .withMessageContaining("Illegal usage, opponents should always be the same");
     }
 
     @Test
     @DisplayName("requires that all supplied game engines are the same")
     void throwIllegalArgumentExceptionIfOneOfSuppliedGameEnginesIsDifferentFromTheOthers() {
-        throw new UnsupportedOperationException("TODO");
+        GameEngine match1 = MockedGE.anyWithPlayerScore(15);
+        GameEngine match2 = new AnotherGE();
+
+        List<GameEngine> matches = Arrays.asList(match1, match2);
+        Iterator<GameEngine> it = matches.iterator();
+
+        Game game = new Game(anyAIInput(), anyAIInput(), it::next, service, matches.size());
+
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(game::call)
+                .withMessageContaining("Illegal usage, game engines should always be the same");
     }
 
     @Nested
@@ -173,23 +206,14 @@ class GameTest implements WithAssertions {
 
             GameResult result = game.call();
 
-            assertThat(
-                    "GameResult{averagePlayerScore=5.0, "
-                            +
-                            "averageOpponentScore=3.0, "
-                            +
-                            "averageNumberOfRounds=7.0, "
-                            +
-                            "playerWinRate=1.0, "
-                            +
-                            "numberOfMatches=1, "
-                            +
-                            "winner=PLAYER, "
-                            +
-                            "matchResults=["
-                            +
-                            "MatchResult{player=MockedArtificialIntelligence{ai=MockedArtificialIntelligence, actions=[Mock for Action, hashCode: 1292040526]}, opponent=MockedArtificialIntelligence{ai=MockedArtificialIntelligence, actions=[Mock for Action, hashCode: 1973233403]}, gameEngine=MockedGameEngine{gameEngine=MockedGameEngine, winner=PLAYER, playerScore=5, opponentScore=3, numberOfRounds=7, playerInput=[16, 5, 95], opponentInput=[51, 78, 92], playerInputIt=java.util.ArrayList$Itr@3c73951, opponentInputIt=java.util.ArrayList$Itr@3d5c822d}, playerScore=5, opponentScore=3, rounds=7, winner=PLAYER}]}")
-                    .isEqualTo(result.toString());
+            assertThat(result.toString()).contains(
+                    "GameResult{averagePlayerScore=5.0, " +
+                            "averageOpponentScore=3.0, " +
+                            "averageNumberOfRounds=7.0, " +
+                            "playerWinRate=1.0, " +
+                            "numberOfMatches=1, " +
+                            "winner=PLAYER, " +
+                            "matchResults=[");
 
         }
     }
@@ -197,5 +221,82 @@ class GameTest implements WithAssertions {
     private static AIInput anyAIInput() {
         return AIBuilder.newBuilder()
                 .withCtor((input) -> MockedAI.any());
+    }
+
+    private static class AnotherAI extends AI {
+
+        public AnotherAI() {
+            super(() -> 0);
+        }
+
+        @Override
+        public Action[] play() {
+            return new Action[0];
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            return this == o || !(o == null || getClass() != o.getClass());
+
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(getClass());
+        }
+    }
+
+    private static class AnotherGE implements GameEngine {
+
+        @Override
+        public void start() {
+
+        }
+
+        @Override
+        public void run(Action[] playerActions, Action[] opponentActions) {
+
+        }
+
+        @Override
+        public Winner getWinner() {
+            return null;
+        }
+
+        @Override
+        public int playerInput() {
+            return 0;
+        }
+
+        @Override
+        public int opponentInput() {
+            return 0;
+        }
+
+        @Override
+        public int getPlayerScore() {
+            return 0;
+        }
+
+        @Override
+        public int getOpponentScore() {
+            return 0;
+        }
+
+        @Override
+        public int getNumberOfRounds() {
+            return 0;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            return this == o || !(o == null || getClass() != o.getClass());
+
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(getClass());
+        }
     }
 }
