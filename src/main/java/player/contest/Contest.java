@@ -76,10 +76,7 @@ public final class Contest implements Callable<Contest.ContestResult> {
 
         List<Future<GameResult>> futures = gameExecutorService.invokeAll(games);
 
-        List<Score> scores = new ArrayList<>();
-        for (int i = 0; i < futures.size(); i++) {
-            scores.add(new Score());
-        }
+        Score[] scores = new Score[ais.size()];
 
         int offset = 0;
 
@@ -90,23 +87,28 @@ public final class Contest implements Callable<Contest.ContestResult> {
                 Future<GameResult> future = futures.get(offset + k);
                 GameResult result = future.get();
 
-                AI opponent = result.getMatchResults().stream()
-                        .map(Match.MatchResult::getOpponent)
-                        .findAny()
-                        .orElseThrow(() -> new IllegalStateException("Expected one opponent, but none found"));
-
                 AI player = result.getMatchResults().stream()
                         .map(Match.MatchResult::getPlayer)
                         .findAny()
-                        .orElseThrow(() -> new IllegalStateException("Expected one opponent, but none found"));
+                        .orElseThrow(() -> new IllegalStateException("Expected at least one player, but none found"));
 
-                scores.get(i).addAIs(players);
-                scores.get(j).addAIs(opponents);
+                if (scores[i] == null) {
+                    scores[i] = new Score(player);
+                }
+
+                AI opponent = result.getMatchResults().stream()
+                        .map(Match.MatchResult::getOpponent)
+                        .findAny()
+                        .orElseThrow(() -> new IllegalStateException("Expected at least one opponent, but none found"));
+
+                if (scores[j] == null) {
+                    scores[j] = new Score(opponent);
+                }
 
                 if (result.getWinner().equals(Winner.PLAYER)) {
-                    scores.get(i).incrementScore();
+                    scores[i].incrementVictoryCount();
                 } else {
-                    scores.get(j).incrementScore();
+                    scores[j].incrementVictoryCount();
                 }
 
                 k++;
@@ -122,11 +124,11 @@ public final class Contest implements Callable<Contest.ContestResult> {
 
         private final List<Classification> classifications;
 
-        ContestResult(List<Score> scores) {
+        ContestResult(Score[] scores) {
             this.classifications = new ArrayList<>();
-            for (int i = 0; i < scores.size(); i++) {
-                Score score = scores.get(i);
-                this.classifications.add(new Classification(score.getAis(), score.getScore(), scores.size() - 1));
+            for (int i = 0; i < scores.length; i++) {
+                Score score = scores[i];
+                this.classifications.add(new Classification(score.getAi(), score.getVictoryCount(), scores.length - 1));
             }
 
             Collections.sort(classifications);
@@ -181,30 +183,29 @@ public final class Contest implements Callable<Contest.ContestResult> {
         @Override
         public String toString() {
             return MoreObjects.toStringHelper(this)
-                    // all ais are the same, so any of them is sufficient
-                    .add("ai", ais.get(0).getClass().getSimpleName())
-                    .add("conf", ais.get(0).getConf())
+                    .add("ai", ai.getClass().getSimpleName())
+                    .add("conf", ai.getConf())
                     .add("winRate", winRate)
-                    .add("score", score)
+                    .add("victoryCount", score)
                     .toString();
         }
     }
 
     private static class Score {
-        private int score;
+        private int victoryCount;
         private final AI ai;
 
         Score(AI ai) {
             this.ai = ai;
-            this.score = 0;
+            this.victoryCount = 0;
         }
 
-        void incrementScore() {
-            score++;
+        void incrementVictoryCount() {
+            victoryCount++;
         }
 
-        int getScore() {
-            return score;
+        int getVictoryCount() {
+            return victoryCount;
         }
 
         AI getAi() {
