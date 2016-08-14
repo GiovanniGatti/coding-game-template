@@ -1,5 +1,14 @@
 package player.contest;
 
+import com.google.common.base.MoreObjects;
+import player.Player.AI;
+import player.ai.builder.AIInput;
+import player.engine.Winner;
+import player.engine.builder.GEBuild;
+import player.game.Game;
+import player.game.Game.GameResult;
+import player.match.Match;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -8,17 +17,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-import java.util.stream.Collectors;
-
-import com.google.common.base.MoreObjects;
-
-import player.Player.AI;
-import player.ai.builder.AIInput;
-import player.engine.Winner;
-import player.engine.builder.GEBuild;
-import player.game.Game;
-import player.game.Game.GameResult;
-import player.match.Match;
 
 /**
  * Play any number of AIs against each other and then check its performances
@@ -92,13 +90,15 @@ public final class Contest implements Callable<Contest.ContestResult> {
                 Future<GameResult> future = futures.get(offset + k);
                 GameResult result = future.get();
 
-                List<AI> opponents = result.getMatchResults().stream()
+                AI opponent = result.getMatchResults().stream()
                         .map(Match.MatchResult::getOpponent)
-                        .collect(Collectors.toList());
+                        .findAny()
+                        .orElseThrow(() -> new IllegalStateException("Expected one opponent, but none found"));
 
-                List<AI> players = result.getMatchResults().stream()
+                AI player = result.getMatchResults().stream()
                         .map(Match.MatchResult::getPlayer)
-                        .collect(Collectors.toList());
+                        .findAny()
+                        .orElseThrow(() -> new IllegalStateException("Expected one opponent, but none found"));
 
                 scores.get(i).addAIs(players);
                 scores.get(j).addAIs(opponents);
@@ -151,12 +151,12 @@ public final class Contest implements Callable<Contest.ContestResult> {
         static final Comparator<Classification> SCORE_COMPARATOR =
                 Comparator.comparing(Classification::getScore).reversed();
 
-        private final List<AI> ais;
+        private final AI ai;
         private final int score;
         private final double winRate;
 
-        Classification(List<AI> ais, int score, int numberOfMatches) {
-            this.ais = ais;
+        Classification(AI ai, int score, int numberOfMatches) {
+            this.ai = ai;
             this.score = score;
             this.winRate = ((double) score) / numberOfMatches;
         }
@@ -165,8 +165,8 @@ public final class Contest implements Callable<Contest.ContestResult> {
             return score;
         }
 
-        List<AI> getAi() {
-            return ais;
+        AI getAi() {
+            return ai;
         }
 
         double getWinRate() {
@@ -192,11 +192,11 @@ public final class Contest implements Callable<Contest.ContestResult> {
 
     private static class Score {
         private int score;
-        private List<AI> ais;
+        private final AI ai;
 
-        Score() {
+        Score(AI ai) {
+            this.ai = ai;
             this.score = 0;
-            this.ais = new ArrayList<>();
         }
 
         void incrementScore() {
@@ -207,16 +207,8 @@ public final class Contest implements Callable<Contest.ContestResult> {
             return score;
         }
 
-        void addAIs(List<AI> ais) {
-            this.ais.addAll(ais);
-        }
-
-        void addAI(AI ai) {
-            ais.add(ai);
-        }
-
-        List<AI> getAis() {
-            return Collections.unmodifiableList(ais);
+        AI getAi() {
+            return ai;
         }
     }
 }
