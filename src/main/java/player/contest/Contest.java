@@ -57,6 +57,10 @@ public final class Contest implements Callable<Contest.ContestResult> {
     @Override
     public ContestResult call() throws InterruptedException, ExecutionException {
 
+        if (ais.size() < 2) {
+            throw new IllegalStateException("Unable to play a contest with a single provided AI");
+        }
+
         List<Callable<GameResult>> games = new ArrayList<>();
         for (int i = 0; i < ais.size() - 1; i++) {
             AIInput player = ais.get(i);
@@ -151,20 +155,20 @@ public final class Contest implements Callable<Contest.ContestResult> {
     public static class Classification implements Comparable<Classification> {
 
         static final Comparator<Classification> SCORE_COMPARATOR =
-                Comparator.comparing(Classification::getScore).reversed();
+                Comparator.comparing(Classification::getVictoryCount).reversed();
 
         private final AI ai;
-        private final int score;
+        private final int victoryCount;
         private final double winRate;
 
-        Classification(AI ai, int score, int numberOfMatches) {
+        Classification(AI ai, int victoryCount, int numberOfMatches) {
             this.ai = ai;
-            this.score = score;
-            this.winRate = ((double) score) / numberOfMatches;
+            this.victoryCount = victoryCount;
+            this.winRate = ((double) victoryCount) / numberOfMatches;
         }
 
-        int getScore() {
-            return score;
+        int getVictoryCount() {
+            return victoryCount;
         }
 
         AI getAi() {
@@ -186,7 +190,7 @@ public final class Contest implements Callable<Contest.ContestResult> {
                     .add("ai", ai.getClass().getSimpleName())
                     .add("conf", ai.getConf())
                     .add("winRate", winRate)
-                    .add("victoryCount", score)
+                    .add("victoryCount", victoryCount)
                     .toString();
         }
     }

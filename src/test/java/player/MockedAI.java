@@ -1,13 +1,12 @@
 package player;
 
-import java.util.Collections;
-
-import org.mockito.Mockito;
-
 import com.google.common.base.MoreObjects;
-
+import org.mockito.Mockito;
 import player.Player.AI;
 import player.Player.Action;
+
+import java.util.Collections;
+import java.util.Map;
 
 public final class MockedAI {
 
@@ -25,16 +24,29 @@ public final class MockedAI {
                 .build();
     }
 
+    public static AI anyConf(Map<String, Object> conf) {
+        return newBuilder()
+                .withConf(conf)
+                .build();
+    }
+
     public static Builder newBuilder() {
         return new Builder();
     }
 
     public static class Builder {
 
+        private Map<String, Object> conf;
         private Action[] actions;
 
         private Builder() {
-            this.actions = new Action[] { Mockito.mock(Action.class) };
+            this.conf = Collections.emptyMap();
+            this.actions = new Action[]{Mockito.mock(Action.class)};
+        }
+
+        public Builder withConf(Map<String, Object> conf) {
+            this.conf = conf;
+            return this;
         }
 
         public Builder withActions(Action... actions) {
@@ -43,7 +55,7 @@ public final class MockedAI {
         }
 
         AI build() {
-            return new MockedArtificialIntelligence(actions);
+            return new MockedArtificialIntelligence(conf, actions);
         }
     }
 
@@ -51,8 +63,8 @@ public final class MockedAI {
 
         private final Action[] actions;
 
-        private MockedArtificialIntelligence(Action[] actions) {
-            super(Collections.emptyMap(), () -> 0);
+        private MockedArtificialIntelligence(Map<String, Object> conf, Action[] actions) {
+            super(conf, () -> 0);
             this.actions = actions;
         }
 
@@ -64,6 +76,7 @@ public final class MockedAI {
         @Override
         public String toString() {
             return MoreObjects.toStringHelper(this)
+                    .add("conf", getConf())
                     .add("actions", actions)
                     .toString();
         }
