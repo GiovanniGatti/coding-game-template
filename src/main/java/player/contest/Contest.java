@@ -63,11 +63,12 @@ public final class Contest implements Callable<Contest.ContestResult> {
         }
 
         List<Callable<GameResult>> games = new ArrayList<>();
-        for (int i = 0; i < ais.size() - 1; i++) {
-            AIInput player = ais.get(i);
-            for (int j = i + 1; j < ais.size(); j++) {
-                AIInput opponent = ais.get(j);
-                for (GEBuild gameEngine : gameEngines) {
+        for (GEBuild gameEngine : gameEngines) {
+
+            for (int i = 0; i < ais.size() - 1; i++) {
+                AIInput player = ais.get(i);
+                for (int j = i + 1; j < ais.size(); j++) {
+                    AIInput opponent = ais.get(j);
                     games.add(
                             new Game(
                                     player,
