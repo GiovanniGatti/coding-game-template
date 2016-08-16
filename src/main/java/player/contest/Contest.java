@@ -1,14 +1,5 @@
 package player.contest;
 
-import com.google.common.base.MoreObjects;
-import player.Player.AI;
-import player.ai.builder.AIInput;
-import player.engine.Winner;
-import player.engine.builder.GEBuild;
-import player.game.Game;
-import player.game.Game.GameResult;
-import player.match.Match;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -17,6 +8,16 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+
+import com.google.common.base.MoreObjects;
+
+import player.Player.AI;
+import player.ai.builder.AIInput;
+import player.engine.Winner;
+import player.engine.builder.GEBuild;
+import player.game.Game;
+import player.game.Game.GameResult;
+import player.match.Match;
 
 /**
  * Play any number of AIs against each other and then check its performances
@@ -84,41 +85,50 @@ public final class Contest implements Callable<Contest.ContestResult> {
 
         int offset = 0;
 
-        for (int i = 0; i < ais.size() - 1; i++) {
-            int k = 0;
+        for (int g = 0; g < gameEngines.size(); g++) {
 
-            for (int j = i + 1; j < ais.size(); j++) {
-                Future<GameResult> future = futures.get(offset + k);
-                GameResult result = future.get();
+            for (int i = 0; i < ais.size() - 1; i++) {
+                int k = 0;
 
-                AI player = result.getMatchResults().stream()
-                        .map(Match.MatchResult::getPlayer)
-                        .findAny()
-                        .orElseThrow(() -> new IllegalStateException("Expected at least one player, but none found"));
+                for (int j = i + 1; j < ais.size(); j++) {
+                    Future<GameResult> future = futures.get(offset + k);
+                    GameResult result = future.get();
 
-                if (scores[i] == null) {
-                    scores[i] = new Score(player);
+                    AI player = result
+                            .getMatchResults()
+                            .stream()
+                            .map(Match.MatchResult::getPlayer)
+                            .findAny()
+                            .orElseThrow(
+                                    () -> new IllegalStateException("Expected at least one player, but none found"));
+
+                    if (scores[i] == null) {
+                        scores[i] = new Score(player);
+                    }
+
+                    AI opponent = result
+                            .getMatchResults()
+                            .stream()
+                            .map(Match.MatchResult::getOpponent)
+                            .findAny()
+                            .orElseThrow(
+                                    () -> new IllegalStateException("Expected at least one opponent, but none found"));
+
+                    if (scores[j] == null) {
+                        scores[j] = new Score(opponent);
+                    }
+
+                    if (result.getWinner().equals(Winner.PLAYER)) {
+                        scores[i].incrementVictoryCount();
+                    } else {
+                        scores[j].incrementVictoryCount();
+                    }
+
+                    k++;
                 }
 
-                AI opponent = result.getMatchResults().stream()
-                        .map(Match.MatchResult::getOpponent)
-                        .findAny()
-                        .orElseThrow(() -> new IllegalStateException("Expected at least one opponent, but none found"));
-
-                if (scores[j] == null) {
-                    scores[j] = new Score(opponent);
-                }
-
-                if (result.getWinner().equals(Winner.PLAYER)) {
-                    scores[i].incrementVictoryCount();
-                } else {
-                    scores[j].incrementVictoryCount();
-                }
-
-                k++;
+                offset += ais.size() - (i + 1);
             }
-
-            offset += ais.size() - (i + 1);
         }
 
         return new ContestResult(scores);
