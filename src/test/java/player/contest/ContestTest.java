@@ -15,8 +15,8 @@ import com.google.common.collect.ImmutableMap;
 
 import player.MockedAI;
 import player.ai.builder.AIInput;
-import player.contest.Contest.Classification;
 import player.contest.Contest.ContestResult;
+import player.contest.Contest.Score;
 import player.engine.MockedGE;
 import player.engine.Winner;
 import player.engine.builder.GEBuild;
@@ -51,13 +51,13 @@ class ContestTest implements WithAssertions {
 
         ContestResult contestResult = contest.call();
 
-        List<Classification> classifications = contestResult.getClassifications();
+        List<Score> classifications = contestResult.getClassification();
 
         assertThat(classifications).hasSize(3);
 
-        Classification first = classifications.get(0);
-        Classification second = classifications.get(1);
-        Classification third = classifications.get(2);
+        Score first = classifications.get(0);
+        Score second = classifications.get(1);
+        Score third = classifications.get(2);
 
         assertThat(first.getAi().getConf()).containsEntry("id", "first");
         assertThat(first.getVictoryCount()).isEqualTo(2);
@@ -79,7 +79,8 @@ class ContestTest implements WithAssertions {
 
         List<GEBuild> gameEngines = Arrays.asList(
                 () -> MockedGE.anyWithWinner(Winner.PLAYER),
-                () -> MockedGE.anyWithWinner(Winner.OPPONENT));
+                () -> MockedGE.anyWithWinner(Winner.OPPONENT),
+                () -> MockedGE.anyWithWinner(Winner.PLAYER));
 
         Contest contest = new Contest(
                 ais,
@@ -89,19 +90,19 @@ class ContestTest implements WithAssertions {
 
         ContestResult contestResult = contest.call();
 
-        List<Classification> classifications = contestResult.getClassifications();
+        List<Score> classifications = contestResult.getClassification();
 
         assertThat(classifications).hasSize(3);
 
-        Classification first = classifications.get(0);
-        Classification second = classifications.get(1);
-        Classification third = classifications.get(2);
+        Score first = classifications.get(0);
+        Score second = classifications.get(1);
+        Score third = classifications.get(2);
 
         assertThat(first.getAi().getConf()).containsEntry("id", "first");
-        assertThat(first.getVictoryCount()).isEqualTo(2);
+        assertThat(first.getVictoryCount()).isEqualTo(4);
 
         assertThat(second.getAi().getConf()).containsEntry("id", "second");
-        assertThat(second.getVictoryCount()).isEqualTo(2);
+        assertThat(second.getVictoryCount()).isEqualTo(3);
 
         assertThat(third.getAi().getConf()).containsEntry("id", "third");
         assertThat(third.getVictoryCount()).isEqualTo(2);

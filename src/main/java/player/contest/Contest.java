@@ -1,6 +1,7 @@
 package player.contest;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -10,6 +11,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Preconditions;
 
 import player.Player.AI;
 import player.ai.builder.AIInput;
@@ -92,6 +94,7 @@ public final class Contest implements Callable<Contest.ContestResult> {
                 int k = 0;
 
                 for (int j = i + 1; j < ais.size(); j++) {
+
                     Future<GameResult> future = futures.get(offset + k);
                     GameResult result = future.get();
 
@@ -107,6 +110,12 @@ public final class Contest implements Callable<Contest.ContestResult> {
                         scores[i] = new Score(player);
                     }
 
+                    Score playerScore = scores[i];
+
+                    playerScore.updateAverageNumberOfRoundsMean(result.getAverageNumberOfRounds());
+                    playerScore.updateAverageScoreMean(result.getAveragePlayerScore());
+                    playerScore.updateAverageWinRateMean(result.getPlayerWinRate());
+
                     AI opponent = result
                             .getMatchResults()
                             .stream()
@@ -119,10 +128,16 @@ public final class Contest implements Callable<Contest.ContestResult> {
                         scores[j] = new Score(opponent);
                     }
 
-                    if (result.getWinner().equals(Winner.PLAYER)) {
-                        scores[i].incrementVictoryCount();
+                    Score opponentScore = scores[j];
+
+                    opponentScore.updateAverageNumberOfRoundsMean(result.getAverageNumberOfRounds());
+                    opponentScore.updateAverageScoreMean(result.getAverageOpponentScore());
+                    opponentScore.updateAverageWinRateMean(1.0 - result.getPlayerWinRate());
+
+                    if (Winner.PLAYER == result.getWinner()) {
+                        playerScore.incrementVictoryCount();
                     } else {
-                        scores[j].incrementVictoryCount();
+                        opponentScore.incrementVictoryCount();
                     }
 
                     k++;
@@ -137,94 +152,121 @@ public final class Contest implements Callable<Contest.ContestResult> {
 
     public static class ContestResult {
 
-        private final List<Classification> classifications;
+        private final List<Score> classification;
 
         ContestResult(Score[] scores) {
-            this.classifications = new ArrayList<>();
+
             for (int i = 0; i < scores.length; i++) {
-                Score score = scores[i];
-                this.classifications.add(new Classification(score.getAi(), score.getVictoryCount(), scores.length - 1));
+                Preconditions.checkNotNull(scores[i], "Unexpected null value at %s", i);
             }
 
-            Collections.sort(classifications);
+            this.classification = Arrays.asList(scores);
+            Collections.sort(classification);
         }
 
-        List<Classification> getClassifications() {
-            return Collections.unmodifiableList(classifications);
+        List<Score> getClassification() {
+            return Collections.unmodifiableList(classification);
         }
 
         @Override
         public String toString() {
             StringBuilder stringBuilder = new StringBuilder();
-            for (int i = 0; i < classifications.size(); i++) {
-                stringBuilder.append(i + 1).append("- ").append(classifications.get(i).toString()).append('\n');
+            for (int i = 0; i < classification.size(); i++) {
+                stringBuilder.append(i + 1).append("- ").append(classification.get(i).toString()).append('\n');
             }
             return stringBuilder.toString();
         }
     }
 
-    public static class Classification implements Comparable<Classification> {
-
-        static final Comparator<Classification> SCORE_COMPARATOR =
-                Comparator.comparing(Classification::getVictoryCount).reversed();
+    public static class Score implements Comparable<Score> {
+        static final Comparator<Score> SCORE_COMPARATOR =
+                Comparator.comparing(Score::getVictoryCount)
+                        .thenComparing(Score::getAverageScore)
+                        .thenComparing(Score::getAverageNumberOfRounds)
+                        .reversed();
 
         private final AI ai;
-        private final int victoryCount;
-        private final double winRate;
 
-        Classification(AI ai, int victoryCount, int numberOfMatches) {
-            this.ai = ai;
-            this.victoryCount = victoryCount;
-            this.winRate = ((double) victoryCount) / numberOfMatches;
-        }
-
-        int getVictoryCount() {
-            return victoryCount;
-        }
-
-        AI getAi() {
-            return ai;
-        }
-
-        double getWinRate() {
-            return winRate;
-        }
-
-        @Override
-        public int compareTo(Classification o) {
-            return SCORE_COMPARATOR.compare(this, o);
-        }
-
-        @Override
-        public String toString() {
-            return MoreObjects.toStringHelper(this)
-                    .add("ai", ai.getClass().getSimpleName())
-                    .add("conf", ai.getConf())
-                    .add("winRate", winRate)
-                    .add("victoryCount", victoryCount)
-                    .toString();
-        }
-    }
-
-    private static class Score {
         private int victoryCount;
-        private final AI ai;
+
+        private double averageScore;
+        private int averageScoreCount;
+
+        private double averageNumberOfRounds;
+        private int averageNumberOfRoundsCount;
+
+        private double averageWinRate;
+        private int averageWinRateCount;
 
         Score(AI ai) {
             this.ai = ai;
+
             this.victoryCount = 0;
+
+            this.averageScore = 0L;
+            this.averageScoreCount = 0;
+
+            this.averageNumberOfRounds = 0L;
+            this.averageNumberOfRoundsCount = 0;
+
+            this.averageWinRate = 0L;
+            this.averageWinRateCount = 0;
         }
 
         void incrementVictoryCount() {
             victoryCount++;
         }
 
-        int getVictoryCount() {
-            return victoryCount;
+        void updateAverageScoreMean(double averageScore) {
+            averageScoreCount++;
+            this.averageScore += (1.0 / (averageScoreCount + 1)) * (averageScore - this.averageScore);
+        }
+
+        void updateAverageNumberOfRoundsMean(double averageScore) {
+            averageNumberOfRoundsCount++;
+            this.averageNumberOfRounds += (1.0 / (averageNumberOfRoundsCount + 1))
+                    * (averageScore - this.averageNumberOfRounds);
+        }
+
+        void updateAverageWinRateMean(double averageWinRate) {
+            averageWinRateCount++;
+            this.averageWinRate += (1.0 / (averageWinRateCount + 1)) * (averageWinRate - this.averageWinRate);
         }
 
         AI getAi() {
             return ai;
+        }
+
+        int getVictoryCount() {
+            return victoryCount;
+        }
+
+        public double getAverageScore() {
+            return averageScore;
+        }
+
+        public double getAverageNumberOfRounds() {
+            return averageNumberOfRounds;
+        }
+
+        public double getAverageWinRate() {
+            return averageWinRate;
+        }
+
+        @Override
+        public int compareTo(Score o) {
+            return SCORE_COMPARATOR.compare(this, o);
+        }
+
+        @Override
+        public String toString() {
+            return MoreObjects.toStringHelper(this)
+                    .add("ai", ai)
+                    .add("victoryCount", victoryCount)
+                    .add("averageScore", averageScore)
+                    .add("averageNumberOfRounds", averageNumberOfRounds)
+                    .add("averageWinRate", averageWinRate)
+                    .toString();
         }
     }
 }
