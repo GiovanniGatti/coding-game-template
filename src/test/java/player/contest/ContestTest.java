@@ -9,6 +9,7 @@ import java.util.concurrent.Executors;
 import org.assertj.core.api.WithAssertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.ImmutableMap;
@@ -31,42 +32,6 @@ class ContestTest implements WithAssertions {
     void init() {
         gameExecutorService = Executors.newFixedThreadPool(2);
         matchExecutorService = Executors.newFixedThreadPool(3);
-    }
-
-    @Test
-    @DisplayName("returns the classification of a battle between multiple ais")
-    void returnsClassificationBetweenMultipleAIs() throws Exception {
-        AIInput firstAI = (t) -> () -> MockedAI.anyConf(ImmutableMap.of("id", "first"));
-        AIInput secondAI = (t) -> () -> MockedAI.anyConf(ImmutableMap.of("id", "second"));
-        AIInput thirdAI = (t) -> () -> MockedAI.anyConf(ImmutableMap.of("id", "third"));
-        List<AIInput> ais = Arrays.asList(firstAI, secondAI, thirdAI);
-
-        List<GEBuild> gameEngines = Collections.singletonList(() -> MockedGE.anyWithWinner(Winner.PLAYER));
-
-        Contest contest = new Contest(
-                ais,
-                gameEngines,
-                gameExecutorService,
-                matchExecutorService);
-
-        ContestResult contestResult = contest.call();
-
-        List<Score> classifications = contestResult.getClassification();
-
-        assertThat(classifications).hasSize(3);
-
-        Score first = classifications.get(0);
-        Score second = classifications.get(1);
-        Score third = classifications.get(2);
-
-        assertThat(first.getAi().getConf()).containsEntry("id", "first");
-        assertThat(first.getVictoryCount()).isEqualTo(2);
-
-        assertThat(second.getAi().getConf()).containsEntry("id", "second");
-        assertThat(second.getVictoryCount()).isEqualTo(1);
-
-        assertThat(third.getAi().getConf()).containsEntry("id", "third");
-        assertThat(third.getVictoryCount()).isEqualTo(0);
     }
 
     @Test
@@ -108,4 +73,28 @@ class ContestTest implements WithAssertions {
         assertThat(third.getVictoryCount()).isEqualTo(2);
     }
 
+    @Test
+    @DisplayName("cannot run with a one single AI")
+    void throwISEWhenSingleAIIsProvided() {
+        AIInput singleAI = (t) -> () -> MockedAI.anyConf(ImmutableMap.of("id", "first"));
+        List<AIInput> ais = Collections.singletonList(singleAI);
+
+        List<GEBuild> gameEngine = Collections.singletonList(() -> MockedGE.anyWithWinner(Winner.PLAYER));
+
+        Contest contest = new Contest(
+                ais,
+                gameEngine,
+                gameExecutorService,
+                matchExecutorService);
+
+        assertThatExceptionOfType(IllegalStateException.class)
+                .isThrownBy(contest::call)
+                .withMessageContaining("Unable to play a contest with a single provided AI");
+    }
+
+    @Nested
+    @DisplayName("that finished, returns a result with")
+    class Statisticts {
+        // TODO
+    }
 }
