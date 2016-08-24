@@ -102,7 +102,7 @@ public class AIBuilderTest implements WithAssertions {
         NoOpAI noOpAI = (NoOpAI) ai;
         noOpAI.read();
 
-        verify(inputSupplier, times(1));
+        verify(inputSupplier, times(1)).getAsInt();
     }
 
     private static class MutableConfParam {

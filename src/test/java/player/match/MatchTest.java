@@ -147,23 +147,6 @@ class MatchTest implements WithAssertions {
 
             assertThat(matchResult.getRounds()).isEqualTo(3);
         }
-
-        @Test
-        @DisplayName("a readable output")
-        void readableOutput() {
-            MockedGE.Builder gameEngine = MockedGE.newBuilder()
-                    .withOpponentScore(3)
-                    .withPlayerScore(5)
-                    .withNumberOfRounds(7)
-                    .withWinner(Winner.PLAYER);
-
-            Match match = new Match(anyAIInput(), anyAIInput(), gameEngine::build);
-
-            MatchResult matchResult = match.call();
-
-            assertThat("MatchResult{playerScore=5, opponentScore=3, rounds=7, winner=PLAYER}")
-                    .isEqualTo(matchResult.toString());
-        }
     }
 
     private static AIInput anyAIInput() {

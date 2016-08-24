@@ -131,6 +131,71 @@ class ContestTest implements WithAssertions {
 
             assertThat(score.getAverageScore()).isEqualTo(15.0);
         }
+
+        @Test
+        @DisplayName("the right average number of rounds")
+        void averageNumberOfRounds() throws ExecutionException, InterruptedException {
+            List<AIInput> ais = Arrays.asList(
+                    (t) -> ContestTest::anyPlayerAI,
+                    (t) -> MockedAI::any);
+
+            List<GEBuild> gameEngines = Arrays.asList(
+                    () -> MockedGE.anyWithNumberOfRounds(10),
+                    () -> MockedGE.anyWithNumberOfRounds(20));
+
+            Contest contest = new Contest(
+                    ais,
+                    gameEngines,
+                    gameExecutorService,
+                    matchExecutorService);
+
+            ContestResult result = contest.call();
+
+            Optional<Score> maybeScore =
+                    result.getClassification()
+                            .stream()
+                            .filter(t -> ContestTest.isPlayerAI(t.getAi()))
+                            .findFirst();
+
+            assertThat(maybeScore).isPresent();
+
+            Score score = maybeScore.get();
+
+            assertThat(score.getAverageNumberOfRounds()).isEqualTo(15.0);
+        }
+
+        @Test
+        @DisplayName("the right average win rate")
+        void averageWinRate() throws ExecutionException, InterruptedException {
+            List<AIInput> ais = Arrays.asList(
+                    (t) -> ContestTest::anyPlayerAI,
+                    (t) -> MockedAI::any);
+
+            List<GEBuild> gameEngines = Arrays.asList(
+                    () -> MockedGE.anyWithWinner(Winner.PLAYER),
+                    () -> MockedGE.anyWithWinner(Winner.PLAYER),
+                    () -> MockedGE.anyWithWinner(Winner.OPPONENT));
+
+            Contest contest = new Contest(
+                    ais,
+                    gameEngines,
+                    gameExecutorService,
+                    matchExecutorService);
+
+            ContestResult result = contest.call();
+
+            Optional<Score> maybeScore =
+                    result.getClassification()
+                            .stream()
+                            .filter(t -> ContestTest.isPlayerAI(t.getAi()))
+                            .findFirst();
+
+            assertThat(maybeScore).isPresent();
+
+            Score score = maybeScore.get();
+
+            assertThat(score.getAverageWinRate()).isBetween(2.0 / 3 - 0.001, 2.0 / 3 + 0.001);
+        }
     }
 
     private static Player.AI anyPlayerAI() {
