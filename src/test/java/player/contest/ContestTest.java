@@ -3,6 +3,9 @@ package player.contest;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -15,6 +18,7 @@ import org.junit.jupiter.api.Test;
 import com.google.common.collect.ImmutableMap;
 
 import player.MockedAI;
+import player.Player;
 import player.ai.builder.AIInput;
 import player.contest.Contest.ContestResult;
 import player.contest.Contest.Score;
@@ -95,6 +99,46 @@ class ContestTest implements WithAssertions {
     @Nested
     @DisplayName("that finished, returns a result with")
     class Statisticts {
-        // TODO
+
+        @Test
+        @DisplayName("the right average score")
+        void averageScore() throws ExecutionException, InterruptedException {
+            List<AIInput> ais = Arrays.asList(
+                    (t) -> ContestTest::anyPlayerAI,
+                    (t) -> MockedAI::any);
+
+            List<GEBuild> gameEngines = Arrays.asList(
+                    () -> MockedGE.anyWithPlayerScore(10),
+                    () -> MockedGE.anyWithPlayerScore(20));
+
+            Contest contest = new Contest(
+                    ais,
+                    gameEngines,
+                    gameExecutorService,
+                    matchExecutorService);
+
+            ContestResult result = contest.call();
+
+            Optional<Score> maybeScore =
+                    result.getClassification()
+                            .stream()
+                            .filter(t -> ContestTest.isPlayerAI(t.getAi()))
+                            .findFirst();
+
+            assertThat(maybeScore).isPresent();
+
+            Score score = maybeScore.get();
+
+            assertThat(score.getAverageScore()).isEqualTo(15.0);
+        }
+    }
+
+    private static Player.AI anyPlayerAI() {
+        return MockedAI.anyConf(ImmutableMap.of("id", "player"));
+    }
+
+    private static boolean isPlayerAI(Player.AI ai) {
+        Map<String, Object> conf = ai.getConf();
+        return "player".equals(conf.get("id"));
     }
 }

@@ -218,19 +218,19 @@ public final class Contest implements Callable<Contest.ContestResult> {
         }
 
         void updateAverageScoreMean(double averageScore) {
-            averageScoreCount++;
             this.averageScore += (1.0 / (averageScoreCount + 1)) * (averageScore - this.averageScore);
+            averageScoreCount++;
         }
 
         void updateAverageNumberOfRoundsMean(double averageScore) {
-            averageNumberOfRoundsCount++;
             this.averageNumberOfRounds += (1.0 / (averageNumberOfRoundsCount + 1))
                     * (averageScore - this.averageNumberOfRounds);
+            averageNumberOfRoundsCount++;
         }
 
         void updateAverageWinRateMean(double averageWinRate) {
-            averageWinRateCount++;
             this.averageWinRate += (1.0 / (averageWinRateCount + 1)) * (averageWinRate - this.averageWinRate);
+            averageWinRateCount++;
         }
 
         AI getAi() {
