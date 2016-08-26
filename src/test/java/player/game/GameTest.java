@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 import org.assertj.core.api.WithAssertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,8 +18,6 @@ import org.junit.jupiter.api.Test;
 import player.MockedAI;
 import player.Player.AI;
 import player.Player.Action;
-import player.ai.builder.AIBuilder;
-import player.ai.builder.AIInput;
 import player.engine.GameEngine;
 import player.engine.MockedGE;
 import player.engine.Winner;
@@ -218,9 +218,8 @@ class GameTest implements WithAssertions {
         }
     }
 
-    private static AIInput anyAIInput() {
-        return AIBuilder.newBuilder()
-                .withCtor((input) -> MockedAI.any());
+    private static Function<Supplier<Integer>, Supplier<AI>> anyAIInput() {
+        return (input) -> MockedAI::any;
     }
 
     private static class AnotherAI extends AI {

@@ -1,13 +1,13 @@
 package player.match;
 
 import java.util.concurrent.Callable;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 import player.Player.AI;
 import player.Player.Action;
-import player.ai.builder.AIInput;
 import player.engine.GameEngine;
 import player.engine.Winner;
-import player.engine.builder.GEBuild;
 
 /**
  *
@@ -21,13 +21,13 @@ public final class Match implements Callable<Match.MatchResult> {
     private final GameEngine gameEngine;
 
     public Match(
-            AIInput player,
-            AIInput opponent,
-            GEBuild gameEngine) {
+            Function<Supplier<Integer>, Supplier<AI>> player,
+            Function<Supplier<Integer>, Supplier<AI>> opponent,
+            Supplier<GameEngine> gameEngine) {
 
-        this.gameEngine = gameEngine.build();
-        this.player = player.withInputSupplier(this.gameEngine::playerInput).build();
-        this.opponent = opponent.withInputSupplier(this.gameEngine::opponentInput).build();
+        this.gameEngine = gameEngine.get();
+        this.player = player.apply(this.gameEngine::playerInput).get();
+        this.opponent = opponent.apply(this.gameEngine::opponentInput).get();
     }
 
     @Override

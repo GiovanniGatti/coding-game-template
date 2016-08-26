@@ -7,15 +7,15 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 
 import player.Player.AI;
-import player.ai.builder.AIInput;
 import player.engine.GameEngine;
 import player.engine.Winner;
-import player.engine.builder.GEBuild;
 import player.match.Match;
 import player.match.Match.MatchResult;
 
@@ -27,25 +27,25 @@ public class Game implements Callable<Game.GameResult> {
 
     private static final int DEFAULT_NUMBER_OF_MATCHES = 5;
 
-    private final AIInput player;
-    private final AIInput opponent;
-    private final GEBuild gameEngine;
+    private final Function<Supplier<Integer>, Supplier<AI>> player;
+    private final Function<Supplier<Integer>, Supplier<AI>> opponent;
+    private final Supplier<GameEngine> gameEngine;
     private final int numberOfMatches;
     private final ExecutorService executorService;
 
     public Game(
-            AIInput player,
-            AIInput opponent,
-            GEBuild gameEngine,
+            Function<Supplier<Integer>, Supplier<AI>> player,
+            Function<Supplier<Integer>, Supplier<AI>> opponent,
+            Supplier<GameEngine> gameEngine,
             ExecutorService executorService) {
 
         this(player, opponent, gameEngine, executorService, DEFAULT_NUMBER_OF_MATCHES);
     }
 
     public Game(
-            AIInput player,
-            AIInput opponent,
-            GEBuild gameEngine,
+            Function<Supplier<Integer>, Supplier<AI>> player,
+            Function<Supplier<Integer>, Supplier<AI>> opponent,
+            Supplier<GameEngine> gameEngine,
             ExecutorService executorService,
             int numberOfMatches) {
 

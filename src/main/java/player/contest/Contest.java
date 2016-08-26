@@ -9,14 +9,15 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 
 import player.Player.AI;
-import player.ai.builder.AIInput;
+import player.engine.GameEngine;
 import player.engine.Winner;
-import player.engine.builder.GEBuild;
 import player.game.Game;
 import player.game.Game.GameResult;
 import player.match.Match;
@@ -28,15 +29,15 @@ public final class Contest implements Callable<Contest.ContestResult> {
 
     private static final int DEFAULT_NUMBER_OF_MATCHES = 5;
 
-    private final List<AIInput> ais;
-    private final List<GEBuild> gameEngines;
+    private final List<Function<Supplier<Integer>, Supplier<AI>>> ais;
+    private final List<Supplier<GameEngine>> gameEngines;
     private final ExecutorService gameExecutorService;
     private final ExecutorService matchExecutorService;
     private final int numberOfMatches;
 
     public Contest(
-            List<AIInput> ais,
-            List<GEBuild> gameEngines,
+            List<Function<Supplier<Integer>, Supplier<AI>>> ais,
+            List<Supplier<GameEngine>> gameEngines,
             ExecutorService gameExecutorService,
             ExecutorService matchExecutorService) {
 
@@ -44,8 +45,8 @@ public final class Contest implements Callable<Contest.ContestResult> {
     }
 
     public Contest(
-            List<AIInput> ais,
-            List<GEBuild> gameEngines,
+            List<Function<Supplier<Integer>, Supplier<AI>>> ais,
+            List<Supplier<GameEngine>> gameEngines,
             ExecutorService gameExecutorService,
             ExecutorService matchExecutorService,
             int numberOfMatches) {
@@ -65,12 +66,12 @@ public final class Contest implements Callable<Contest.ContestResult> {
         }
 
         List<Callable<GameResult>> games = new ArrayList<>();
-        for (GEBuild gameEngine : gameEngines) {
+        for (Supplier<GameEngine> gameEngine : gameEngines) {
 
             for (int i = 0; i < ais.size() - 1; i++) {
-                AIInput player = ais.get(i);
+                Function<Supplier<Integer>, Supplier<AI>> player = ais.get(i);
                 for (int j = i + 1; j < ais.size(); j++) {
-                    AIInput opponent = ais.get(j);
+                    Function<Supplier<Integer>, Supplier<AI>> opponent = ais.get(j);
                     games.add(
                             new Game(
                                     player,

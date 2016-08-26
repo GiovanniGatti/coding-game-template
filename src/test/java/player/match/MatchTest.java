@@ -3,6 +3,9 @@ package player.match;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.function.Function;
+import java.util.function.Supplier;
+
 import org.assertj.core.api.WithAssertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -11,15 +14,12 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import player.MockedAI;
+import player.Player;
 import player.Player.Action;
-import player.ai.builder.AIBuilder;
-import player.ai.builder.AIInput;
 import player.engine.GameEngine;
 import player.engine.MockedGE;
 import player.engine.MultipleRoundMockedGE;
 import player.engine.Winner;
-import player.engine.builder.GEBuild;
-import player.engine.builder.GEBuilder;
 import player.match.Match.MatchResult;
 
 @DisplayName("A match")
@@ -33,8 +33,7 @@ class MatchTest implements WithAssertions {
 
         MultipleRoundMockedGE gameEngine = new MultipleRoundMockedGE(start, round1);
 
-        GEBuild gameEngineSupplier = GEBuilder.newBuilder()
-                .withCtor(() -> gameEngine);
+        Supplier<GameEngine> gameEngineSupplier = () -> gameEngine;
 
         Match match = new Match(anyAIInput(), anyAIInput(), gameEngineSupplier);
 
@@ -53,8 +52,7 @@ class MatchTest implements WithAssertions {
 
         MultipleRoundMockedGE gameEngine = new MultipleRoundMockedGE(start, round1, round2, round3);
 
-        GEBuild gameEngineSupplier = GEBuilder.newBuilder()
-                .withCtor(() -> gameEngine);
+        Supplier<GameEngine> gameEngineSupplier = () -> gameEngine;
 
         Match match = new Match(anyAIInput(), anyAIInput(), gameEngineSupplier);
 
@@ -68,17 +66,16 @@ class MatchTest implements WithAssertions {
     void playAIActions() {
 
         Action playerAction = Mockito.mock(Action.class);
-        AIInput playerAIInput = AIBuilder.newBuilder()
-                .withCtor((input) -> MockedAI.anyWithActions(playerAction));
+        Function<Supplier<Integer>, Supplier<Player.AI>> playerAIInput =
+                (input) -> () -> MockedAI.anyWithActions(playerAction);
 
         Action opponentAction = Mockito.mock(Action.class);
-        AIInput opponentAIInput = AIBuilder.newBuilder()
-                .withCtor((input) -> MockedAI.anyWithActions(opponentAction));
+        Function<Supplier<Integer>, Supplier<Player.AI>> opponentAIInput =
+                (input) -> () -> MockedAI.anyWithActions(opponentAction);
 
         GameEngine gameEngine = Mockito.mock(GameEngine.class);
         when(gameEngine.getWinner()).thenReturn(Winner.PLAYER);
-        GEBuild gameEngineBuild = GEBuilder.newBuilder()
-                .withCtor(() -> gameEngine);
+        Supplier<GameEngine> gameEngineBuild = () -> gameEngine;
 
         Match match = new Match(playerAIInput, opponentAIInput, gameEngineBuild);
 
@@ -99,8 +96,7 @@ class MatchTest implements WithAssertions {
         @Test
         @DisplayName("the right winner")
         void rightWinner() {
-            GEBuild gameEngineBuild = GEBuilder.newBuilder()
-                    .withCtor(() -> MockedGE.anyWithWinner(Winner.OPPONENT));
+            Supplier<GameEngine> gameEngineBuild = () -> MockedGE.anyWithWinner(Winner.OPPONENT);
 
             Match match = new Match(anyAIInput(), anyAIInput(), gameEngineBuild);
 
@@ -112,8 +108,7 @@ class MatchTest implements WithAssertions {
         @Test
         @DisplayName("the right player score")
         void playerScore() {
-            GEBuild gameEngineBuild = GEBuilder.newBuilder()
-                    .withCtor(() -> MockedGE.anyWithPlayerScore(17));
+            Supplier<GameEngine> gameEngineBuild = () -> MockedGE.anyWithPlayerScore(17);
 
             Match match = new Match(anyAIInput(), anyAIInput(), gameEngineBuild);
 
@@ -125,8 +120,7 @@ class MatchTest implements WithAssertions {
         @Test
         @DisplayName("the right opponent score")
         void opponentScore() {
-            GEBuild gameEngineBuild = GEBuilder.newBuilder()
-                    .withCtor(() -> MockedGE.anyWithOpponentScore(17));
+            Supplier<GameEngine> gameEngineBuild = () -> MockedGE.anyWithOpponentScore(17);
 
             Match match = new Match(anyAIInput(), anyAIInput(), gameEngineBuild);
 
@@ -138,8 +132,7 @@ class MatchTest implements WithAssertions {
         @Test
         @DisplayName("the right number of rounds")
         void numberOfRounds() {
-            GEBuild gameEngineBuild = GEBuilder.newBuilder()
-                    .withCtor(() -> MockedGE.anyWithNumberOfRounds(3));
+            Supplier<GameEngine> gameEngineBuild = () -> MockedGE.anyWithNumberOfRounds(3);
 
             Match match = new Match(anyAIInput(), anyAIInput(), gameEngineBuild);
 
@@ -149,8 +142,7 @@ class MatchTest implements WithAssertions {
         }
     }
 
-    private static AIInput anyAIInput() {
-        return AIBuilder.newBuilder()
-                .withCtor((input) -> MockedAI.any());
+    private static Function<Supplier<Integer>, Supplier<Player.AI>> anyAIInput() {
+        return (input) -> MockedAI::any;
     }
 }

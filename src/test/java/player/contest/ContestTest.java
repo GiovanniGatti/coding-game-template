@@ -8,6 +8,8 @@ import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 import org.assertj.core.api.WithAssertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,13 +20,12 @@ import org.junit.jupiter.api.Test;
 import com.google.common.collect.ImmutableMap;
 
 import player.MockedAI;
-import player.Player;
-import player.ai.builder.AIInput;
+import player.Player.AI;
 import player.contest.Contest.ContestResult;
 import player.contest.Contest.Score;
+import player.engine.GameEngine;
 import player.engine.MockedGE;
 import player.engine.Winner;
-import player.engine.builder.GEBuild;
 
 @DisplayName("A contest")
 class ContestTest implements WithAssertions {
@@ -41,12 +42,18 @@ class ContestTest implements WithAssertions {
     @Test
     @DisplayName("returns the classification of a battle between multiple ais on multiple game engines")
     void returnsClassificationBetweenMultipleAIsOnMultipleGameEngines() throws Exception {
-        AIInput firstAI = (t) -> () -> MockedAI.anyConf(ImmutableMap.of("id", "first"));
-        AIInput secondAI = (t) -> () -> MockedAI.anyConf(ImmutableMap.of("id", "second"));
-        AIInput thirdAI = (t) -> () -> MockedAI.anyConf(ImmutableMap.of("id", "third"));
-        List<AIInput> ais = Arrays.asList(firstAI, secondAI, thirdAI);
+        Function<Supplier<Integer>, Supplier<AI>> firstAI =
+                (t) -> () -> MockedAI.anyConf(ImmutableMap.of("id", "first"));
 
-        List<GEBuild> gameEngines = Arrays.asList(
+        Function<Supplier<Integer>, Supplier<AI>> secondAI =
+                (t) -> () -> MockedAI.anyConf(ImmutableMap.of("id", "second"));
+
+        Function<Supplier<Integer>, Supplier<AI>> thirdAI =
+                (t) -> () -> MockedAI.anyConf(ImmutableMap.of("id", "third"));
+
+        List<Function<Supplier<Integer>, Supplier<AI>>> ais = Arrays.asList(firstAI, secondAI, thirdAI);
+
+        List<Supplier<GameEngine>> gameEngines = Arrays.asList(
                 () -> MockedGE.anyWithWinner(Winner.PLAYER),
                 () -> MockedGE.anyWithWinner(Winner.OPPONENT),
                 () -> MockedGE.anyWithWinner(Winner.PLAYER));
@@ -80,10 +87,12 @@ class ContestTest implements WithAssertions {
     @Test
     @DisplayName("cannot run with a one single AI")
     void throwISEWhenSingleAIIsProvided() {
-        AIInput singleAI = (t) -> () -> MockedAI.anyConf(ImmutableMap.of("id", "first"));
-        List<AIInput> ais = Collections.singletonList(singleAI);
+        Function<Supplier<Integer>, Supplier<AI>> singleAI =
+                (t) -> () -> MockedAI.anyConf(ImmutableMap.of("id", "first"));
 
-        List<GEBuild> gameEngine = Collections.singletonList(() -> MockedGE.anyWithWinner(Winner.PLAYER));
+        List<Function<Supplier<Integer>, Supplier<AI>>> ais = Collections.singletonList(singleAI);
+
+        List<Supplier<GameEngine>> gameEngine = Collections.singletonList(() -> MockedGE.anyWithWinner(Winner.PLAYER));
 
         Contest contest = new Contest(
                 ais,
@@ -103,11 +112,11 @@ class ContestTest implements WithAssertions {
         @Test
         @DisplayName("the right average score")
         void averageScore() throws ExecutionException, InterruptedException {
-            List<AIInput> ais = Arrays.asList(
+            List<Function<Supplier<Integer>, Supplier<AI>>> ais = Arrays.asList(
                     (t) -> ContestTest::anyPlayerAI,
                     (t) -> MockedAI::any);
 
-            List<GEBuild> gameEngines = Arrays.asList(
+            List<Supplier<GameEngine>> gameEngines = Arrays.asList(
                     () -> MockedGE.anyWithPlayerScore(10),
                     () -> MockedGE.anyWithPlayerScore(20));
 
@@ -135,11 +144,11 @@ class ContestTest implements WithAssertions {
         @Test
         @DisplayName("the right average number of rounds")
         void averageNumberOfRounds() throws ExecutionException, InterruptedException {
-            List<AIInput> ais = Arrays.asList(
+            List<Function<Supplier<Integer>, Supplier<AI>>> ais = Arrays.asList(
                     (t) -> ContestTest::anyPlayerAI,
                     (t) -> MockedAI::any);
 
-            List<GEBuild> gameEngines = Arrays.asList(
+            List<Supplier<GameEngine>> gameEngines = Arrays.asList(
                     () -> MockedGE.anyWithNumberOfRounds(10),
                     () -> MockedGE.anyWithNumberOfRounds(20));
 
@@ -167,11 +176,11 @@ class ContestTest implements WithAssertions {
         @Test
         @DisplayName("the right average win rate")
         void averageWinRate() throws ExecutionException, InterruptedException {
-            List<AIInput> ais = Arrays.asList(
+            List<Function<Supplier<Integer>, Supplier<AI>>> ais = Arrays.asList(
                     (t) -> ContestTest::anyPlayerAI,
                     (t) -> MockedAI::any);
 
-            List<GEBuild> gameEngines = Arrays.asList(
+            List<Supplier<GameEngine>> gameEngines = Arrays.asList(
                     () -> MockedGE.anyWithWinner(Winner.PLAYER),
                     () -> MockedGE.anyWithWinner(Winner.PLAYER),
                     () -> MockedGE.anyWithWinner(Winner.OPPONENT));
@@ -198,11 +207,11 @@ class ContestTest implements WithAssertions {
         }
     }
 
-    private static Player.AI anyPlayerAI() {
+    private static AI anyPlayerAI() {
         return MockedAI.anyConf(ImmutableMap.of("id", "player"));
     }
 
-    private static boolean isPlayerAI(Player.AI ai) {
+    private static boolean isPlayerAI(AI ai) {
         Map<String, Object> conf = ai.getConf();
         return "player".equals(conf.get("id"));
     }
