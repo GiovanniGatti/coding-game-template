@@ -15,7 +15,7 @@ public class MultipleRoundMockedAI extends AI {
     private final Iterator<AI> rounds;
 
     public MultipleRoundMockedAI(Builder... rounds) {
-        super(Collections.emptyMap(), () -> 0);
+        super(Collections.emptyMap(), MultipleRoundMockedAI::noOp);
 
         List<AI> r = new ArrayList<>();
         for (Builder round : rounds) {
@@ -27,5 +27,9 @@ public class MultipleRoundMockedAI extends AI {
     @Override
     public Action[] play() {
         return rounds.next().play();
+    }
+
+    private static void noOp() {
+        // ILB
     }
 }

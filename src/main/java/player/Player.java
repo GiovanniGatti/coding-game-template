@@ -3,14 +3,25 @@ package player;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Scanner;
 import java.util.function.IntSupplier;
 
 public final class Player {
 
     public static void main(String args[]) {
-        // TODO: implement me!
+
+        Scanner in = new Scanner(System.in);
+
+        Repository repo = null;
         AI ai = null;
 
+        while (true) {
+            ai.updateRepository();
+            Action[] actions = ai.play();
+            for (Action action : actions) {
+                System.out.println(action.asString());
+            }
+        }
     }
 
     /**
@@ -30,22 +41,22 @@ public final class Player {
     public static abstract class AI {
 
         private final Map<String, Object> conf;
-        private final IntSupplier inputSupplier;
+        private final RepositoryUpdater updater;
 
         /**
          * Builds an AI with specified configuration.<br>
          * It is recommended to create a default configuration.
          */
-        public AI(Map<String, Object> conf, IntSupplier inputSupplier) {
+        public AI(Map<String, Object> conf, RepositoryUpdater updater) {
             this.conf = Collections.unmodifiableMap(conf);
-            this.inputSupplier = inputSupplier;
+            this.updater = updater;
         }
 
         /**
          * Builds an AI with an empty configuration.
          */
-        public AI(IntSupplier inputSupplier) {
-            this(Collections.emptyMap(), inputSupplier);
+        public AI(RepositoryUpdater updater) {
+            this(Collections.emptyMap(), updater);
         }
 
         /**
@@ -59,8 +70,8 @@ public final class Player {
             return conf;
         }
 
-        protected int readInput() {
-            return inputSupplier.getAsInt();
+        public final void updateRepository() {
+            updater.update();
         }
 
         @Override
@@ -80,5 +91,27 @@ public final class Player {
         public final int hashCode() {
             return Objects.hash(conf, getClass());
         }
+    }
+
+    public static abstract class Repository {
+
+        private final IntSupplier inputSupplier;
+
+        protected Repository(IntSupplier inputSupplier) {
+            this.inputSupplier = inputSupplier;
+        }
+
+        /**
+         * Reads and parse input stream.
+         */
+        public abstract void update();
+
+        protected int readInput() {
+            return inputSupplier.getAsInt();
+        }
+    }
+
+    public interface RepositoryUpdater {
+        void update();
     }
 }

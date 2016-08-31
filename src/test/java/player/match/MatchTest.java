@@ -4,6 +4,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.function.Function;
+import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 
 import org.assertj.core.api.WithAssertions;
@@ -66,11 +67,11 @@ class MatchTest implements WithAssertions {
     void playAIActions() {
 
         Action playerAction = Mockito.mock(Action.class);
-        Function<Supplier<Integer>, Supplier<Player.AI>> playerAIInput =
+        Function<IntSupplier, Supplier<Player.AI>> playerAIInput =
                 (input) -> () -> MockedAI.anyWithActions(playerAction);
 
         Action opponentAction = Mockito.mock(Action.class);
-        Function<Supplier<Integer>, Supplier<Player.AI>> opponentAIInput =
+        Function<IntSupplier, Supplier<Player.AI>> opponentAIInput =
                 (input) -> () -> MockedAI.anyWithActions(opponentAction);
 
         GameEngine gameEngine = Mockito.mock(GameEngine.class);
@@ -142,7 +143,7 @@ class MatchTest implements WithAssertions {
         }
     }
 
-    private static Function<Supplier<Integer>, Supplier<Player.AI>> anyAIInput() {
+    private static Function<IntSupplier, Supplier<Player.AI>> anyAIInput() {
         return (input) -> MockedAI::any;
     }
 }
