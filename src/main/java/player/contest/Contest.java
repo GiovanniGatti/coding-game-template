@@ -155,6 +155,12 @@ public final class Contest implements Callable<Contest.ContestResult> {
 
         private final List<Score> classification;
 
+        private static final Comparator<Score> SCORE_COMPARATOR =
+                Comparator.comparing(Score::getVictoryCount)
+                        .thenComparing(Score::getAverageScore)
+                        .thenComparing(Score::getAverageNumberOfRounds)
+                        .reversed();
+
         ContestResult(Score[] scores) {
 
             for (int i = 0; i < scores.length; i++) {
@@ -162,7 +168,7 @@ public final class Contest implements Callable<Contest.ContestResult> {
             }
 
             this.classification = Arrays.asList(scores);
-            Collections.sort(classification);
+            Collections.sort(classification, SCORE_COMPARATOR);
         }
 
         List<Score> getClassification() {
@@ -179,12 +185,7 @@ public final class Contest implements Callable<Contest.ContestResult> {
         }
     }
 
-    public static class Score implements Comparable<Score> {
-        static final Comparator<Score> SCORE_COMPARATOR =
-                Comparator.comparing(Score::getVictoryCount)
-                        .thenComparing(Score::getAverageScore)
-                        .thenComparing(Score::getAverageNumberOfRounds)
-                        .reversed();
+    public static class Score {
 
         private final AI ai;
 
@@ -252,11 +253,6 @@ public final class Contest implements Callable<Contest.ContestResult> {
 
         public double getAverageWinRate() {
             return averageWinRate;
-        }
-
-        @Override
-        public int compareTo(Score o) {
-            return SCORE_COMPARATOR.compare(this, o);
         }
 
         @Override
